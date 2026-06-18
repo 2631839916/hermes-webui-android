@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.HermesWebUI" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 主色调 -->
+        <item name="colorPrimary">#6c63ff</item>
+        <item name="colorPrimaryDark">#5a52d5</item>
+        <item name="colorAccent">#03dac6</item>
+        
         <!-- 状态栏 -->
-        <item name="android:statusBarColor">#1a1a2e</item>
-        <item name="android:navigationBarColor">#1a1a2e</item>
+        <item name="android:statusBarColor">#FAF7F0</item>
+        <item name="android:navigationBarColor">#FAF7F0</item>
+        
+        <!-- 背景色 -->
+        <item name="android:windowBackground">#FEFCF7</item>
     </style>
 </resources>
