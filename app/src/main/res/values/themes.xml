@@ -1,29 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.HermesWebUI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- 主色调 -->
-        <item name="colorPrimary">#6c63ff</item>
-        <item name="colorPrimaryVariant">#5a52d5</item>
-        <item name="colorOnPrimary">#ffffff</item>
-        
-        <!-- 次要色调 -->
-        <item name="colorSecondary">#03dac6</item>
-        <item name="colorSecondaryVariant">#018786</item>
-        <item name="colorOnSecondary">#000000</item>
-        
-        <!-- 背景色 -->
-        <item name="android:colorBackground">#1a1a2e</item>
-        <item name="colorSurface">#16213e</item>
-        
-        <!-- 文字颜色 -->
-        <item name="colorOnBackground">#ffffff</item>
-        <item name="colorOnSurface">#ffffff</item>
-        
+    <style name="Theme.HermesWebUI" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- 状态栏 -->
         <item name="android:statusBarColor">#1a1a2e</item>
         <item name="android:navigationBarColor">#1a1a2e</item>
-        
-        <!-- 全屏 -->
-        <item name="android:windowFullscreen">true</item>
     </style>
 </resources>
