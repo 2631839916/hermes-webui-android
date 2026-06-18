@@ -521,16 +521,17 @@
             android:padding="8dp" />
 
         <!-- 新建会话按钮 -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <ImageButton
             android:id="@+id/fabNewSession"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:layout_gravity="end|bottom"
             android:layout_margin="16dp"
             android:contentDescription="New session"
             android:src="@drawable/ic_add"
-            app:backgroundTint="#B8860B"
-            app:tint="#FFFFFF" />
+            android:background="@drawable/send_button_background"
+            android:scaleType="centerInside"
+            android:tint="#FFFFFF" />
     </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>
