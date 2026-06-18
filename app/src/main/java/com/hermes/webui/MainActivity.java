@@ -1,378 +1,435 @@
 package com.hermes.webui;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
-import android.webkit.CookieManager;
-import android.webkit.GeolocationPermissions;
-import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String WEBUI_URL = "http://127.0.0.1:8787";
-    private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
-    private static final int CAMERA_REQUEST_CODE = 1002;
-    private static final int PERMISSION_REQUEST_CODE = 1003;
+    private DrawerLayout drawerLayout;
+    private RecyclerView messageList;
+    private RecyclerView sessionList;
+    private EditText inputMessage;
+    private ImageButton btnSend;
+    private ImageButton btnHamburger;
+    private ImageButton btnNewChat;
+    private ImageButton btnReload;
+    private FloatingActionButton fabNewSession;
 
-    private WebView webView;
-    private ProgressBar progressBar;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private ValueCallback<Uri[]> fileUploadCallback;
-    private String cameraPhotoPath;
+    // 导航按钮
+    private ImageButton navChat, navTasks, navKanban, navSkills, navMemory;
+    private ImageButton navSpaces, navProfiles, navTodos, navInsights, navLogs, navSettings;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    // 面板
+    private View panelChat, panelTasks, panelKanban, panelSkills, panelMemory, panelSettings;
+
+    private MessageAdapter messageAdapter;
+    private SessionAdapter sessionAdapter;
+    private List<Message> messages = new ArrayList<>();
+    private List<Session> sessions = new ArrayList<>();
+
+    private String currentPanel = "chat";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // 全屏显示
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
-        
         setContentView(R.layout.activity_main);
 
-        // 初始化视图
-        webView = findViewById(R.id.webView);
-        progressBar = findViewById(R.id.progressBar);
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-
-        // 配置 WebView
-        setupWebView();
-
-        // 配置下拉刷新
-        setupSwipeRefresh();
-
-        // 加载 WebUI
-        webView.loadUrl(WEBUI_URL);
-
-        // 请求必要权限
-        requestPermissions();
+        initViews();
+        setupListeners();
+        setupRecyclerViews();
+        loadSampleData();
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private void setupWebView() {
-        WebSettings webSettings = webView.getSettings();
+    private void initViews() {
+        drawerLayout = findViewById(R.id.drawerLayout);
+        messageList = findViewById(R.id.messageList);
+        sessionList = findViewById(R.id.sessionList);
+        inputMessage = findViewById(R.id.inputMessage);
+        btnSend = findViewById(R.id.btnSend);
+        btnHamburger = findViewById(R.id.btnHamburger);
+        btnNewChat = findViewById(R.id.btnNewChat);
+        btnReload = findViewById(R.id.btnReload);
+        fabNewSession = findViewById(R.id.fabNewSession);
 
-        // 启用 JavaScript
-        webSettings.setJavaScriptEnabled(true);
+        // 导航按钮
+        navChat = findViewById(R.id.navChat);
+        navTasks = findViewById(R.id.navTasks);
+        navKanban = findViewById(R.id.navKanban);
+        navSkills = findViewById(R.id.navSkills);
+        navMemory = findViewById(R.id.navMemory);
+        navSpaces = findViewById(R.id.navSpaces);
+        navProfiles = findViewById(R.id.navProfiles);
+        navTodos = findViewById(R.id.navTodos);
+        navInsights = findViewById(R.id.navInsights);
+        navLogs = findViewById(R.id.navLogs);
+        navSettings = findViewById(R.id.navSettings);
 
-        // 启用 DOM 存储
-        webSettings.setDomStorageEnabled(true);
+        // 面板
+        panelChat = findViewById(R.id.panelChat);
+        panelTasks = findViewById(R.id.panelTasks);
+        panelKanban = findViewById(R.id.panelKanban);
+        panelSkills = findViewById(R.id.panelSkills);
+        panelMemory = findViewById(R.id.panelMemory);
+        panelSettings = findViewById(R.id.panelSettings);
 
-        // 启用数据库
-        webSettings.setDatabaseEnabled(true);
+        // 设置 Chat 为默认选中
+        navChat.setSelected(true);
+    }
 
-        // 启用缓存
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
-
-        // 启用文件访问
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
-
-        // 启用缩放
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
-
-        // 自适应屏幕
-        webSettings.setUseWideViewPort(true);
-        webSettings.setLoadWithOverviewMode(true);
-
-        // 混合内容模式（允许 HTTP 和 HTTPS 混合内容）
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
-        // 设置 UserAgent
-        String userAgent = webSettings.getUserAgentString();
-        webSettings.setUserAgentString(userAgent + " HermesWebUI/1.0");
-
-        // 启用 Cookie
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.setAcceptThirdPartyCookies(webView, true);
-
-        // 设置 WebViewClient
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                progressBar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
-            }
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                if (request.isForMainFrame()) {
-                    showErrorPage();
-                }
-            }
-
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                
-                // 处理特殊链接
-                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("sms:")) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                }
-                
-                // 处理外部链接
-                if (!url.startsWith(WEBUI_URL)) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                }
-                
-                return false;
-            }
+    private void setupListeners() {
+        // 汉堡菜单
+        btnHamburger.setOnClickListener(v -> {
+            drawerLayout.openDrawer(findViewById(R.id.sidebar));
         });
 
-        // 设置 WebChromeClient
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                super.onProgressChanged(view, newProgress);
-                progressBar.setProgress(newProgress);
-            }
-
-            @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
-                                             FileChooserParams fileChooserParams) {
-                // 处理文件上传
-                if (fileUploadCallback != null) {
-                    fileUploadCallback.onReceiveValue(null);
-                }
-                fileUploadCallback = filePathCallback;
-
-                // 创建文件选择 Intent
-                Intent fileIntent = fileChooserParams.createIntent();
-                
-                // 创建拍照 Intent
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    File photoFile = null;
-                    try {
-                        photoFile = createImageFile();
-                    } catch (IOException ex) {
-                        // 忽略
-                    }
-
-                    if (photoFile != null) {
-                        cameraPhotoPath = "file:" + photoFile.getAbsolutePath();
-                        Uri photoURI = FileProvider.getUriForFile(MainActivity.this,
-                                getApplicationContext().getPackageName() + ".fileprovider",
-                                photoFile);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    }
-                }
-
-                // 合并 Intent
-                Intent chooserIntent = Intent.createChooser(fileIntent, "选择文件");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{takePictureIntent});
-
-                startActivityForResult(chooserIntent, FILE_CHOOSER_REQUEST_CODE);
-                return true;
-            }
-
-            @Override
-            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                // 处理地理位置权限
-                callback.invoke(origin, true, false);
-            }
+        // 新建聊天
+        btnNewChat.setOnClickListener(v -> {
+            createNewChat();
         });
 
-        // 添加 JavaScript 接口
-        webView.addJavascriptInterface(new WebAppInterface(this), "Android");
-    }
-
-    private void setupSwipeRefresh() {
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            webView.reload();
+        // 刷新
+        btnReload.setOnClickListener(v -> {
+            refreshCurrentPanel();
         });
-        
-        // 设置刷新颜色
-        swipeRefreshLayout.setColorSchemeResources(
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_red_light
-        );
+
+        // 发送消息
+        btnSend.setOnClickListener(v -> {
+            sendMessage();
+        });
+
+        // 新建会话
+        fabNewSession.setOnClickListener(v -> {
+            createNewSession();
+        });
+
+        // 导航按钮点击
+        setupNavButton(navChat, "chat");
+        setupNavButton(navTasks, "tasks");
+        setupNavButton(navKanban, "kanban");
+        setupNavButton(navSkills, "skills");
+        setupNavButton(navMemory, "memory");
+        setupNavButton(navSpaces, "workspaces");
+        setupNavButton(navProfiles, "profiles");
+        setupNavButton(navTodos, "todos");
+        setupNavButton(navInsights, "insights");
+        setupNavButton(navLogs, "logs");
+        setupNavButton(navSettings, "settings");
+
+        // 侧边栏关闭按钮
+        findViewById(R.id.btnCloseSidebar).setOnClickListener(v -> {
+            drawerLayout.closeDrawer(findViewById(R.id.sidebar));
+        });
     }
 
-    private void showErrorPage() {
-        String errorHtml = "<html><body style='display:flex;justify-content:center;align-items:center;height:100vh;background:#1a1a2e;color:#fff;font-family:sans-serif;'>" +
-            "<div style='text-align:center;'>" +
-            "<h1>连接失败</h1>" +
-            "<p>无法连接到 Hermes WebUI</p>" +
-            "<p>请确保 WebUI 服务已启动</p>" +
-            "<button onclick='window.location.reload()' style='padding:10px 20px;background:#6c63ff;color:#fff;border:none;border-radius:5px;margin-top:20px;cursor:pointer;'>重试</button>" +
-            "</div></body></html>";
-        webView.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
+    private void setupNavButton(ImageButton button, String panel) {
+        button.setOnClickListener(v -> {
+            switchPanel(panel);
+            // 更新选中状态
+            resetNavSelection();
+            button.setSelected(true);
+        });
     }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    private void resetNavSelection() {
+        navChat.setSelected(false);
+        navTasks.setSelected(false);
+        navKanban.setSelected(false);
+        navSkills.setSelected(false);
+        navMemory.setSelected(false);
+        navSpaces.setSelected(false);
+        navProfiles.setSelected(false);
+        navTodos.setSelected(false);
+        navInsights.setSelected(false);
+        navLogs.setSelected(false);
+        navSettings.setSelected(false);
     }
 
-    private void requestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String[] permissions = {
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-            };
+    private void switchPanel(String panel) {
+        currentPanel = panel;
 
-            boolean needRequest = false;
-            for (String permission : permissions) {
-                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                    needRequest = true;
-                    break;
-                }
-            }
+        // 隐藏所有面板
+        panelChat.setVisibility(View.GONE);
+        panelTasks.setVisibility(View.GONE);
+        panelKanban.setVisibility(View.GONE);
+        panelSkills.setVisibility(View.GONE);
+        panelMemory.setVisibility(View.GONE);
+        panelSettings.setVisibility(View.GONE);
 
-            if (needRequest) {
-                ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
-            }
+        // 显示选中的面板
+        switch (panel) {
+            case "chat":
+                panelChat.setVisibility(View.VISIBLE);
+                break;
+            case "tasks":
+                panelTasks.setVisibility(View.VISIBLE);
+                break;
+            case "kanban":
+                panelKanban.setVisibility(View.VISIBLE);
+                break;
+            case "skills":
+                panelSkills.setVisibility(View.VISIBLE);
+                break;
+            case "memory":
+                panelMemory.setVisibility(View.VISIBLE);
+                break;
+            case "settings":
+                panelSettings.setVisibility(View.VISIBLE);
+                break;
+            default:
+                panelChat.setVisibility(View.VISIBLE);
+                break;
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
-            if (fileUploadCallback == null) return;
+    private void setupRecyclerViews() {
+        // 消息列表
+        messageAdapter = new MessageAdapter(messages);
+        messageList.setLayoutManager(new LinearLayoutManager(this));
+        messageList.setAdapter(messageAdapter);
 
-            Uri[] results = null;
-            if (resultCode == Activity.RESULT_OK) {
-                if (data == null || data.getData() == null) {
-                    if (cameraPhotoPath != null) {
-                        results = new Uri[]{Uri.parse(cameraPhotoPath)};
-                    }
+        // 会话列表
+        sessionAdapter = new SessionAdapter(sessions, session -> {
+            loadSession(session);
+            drawerLayout.closeDrawer(findViewById(R.id.sidebar));
+        });
+        sessionList.setLayoutManager(new LinearLayoutManager(this));
+        sessionList.setAdapter(sessionAdapter);
+    }
+
+    private void loadSampleData() {
+        // 添加示例消息
+        messages.add(new Message("Hermes", "你好！我是 Hermes，你的 AI 助手。有什么可以帮助你的吗？", false));
+        messages.add(new Message("User", "帮我写一个 Python 脚本", true));
+        messages.add(new Message("Hermes", "好的！这是一个简单的 Python 脚本示例：\n\n```python\nprint('Hello, World!')\n```", false));
+
+        messageAdapter.notifyDataSetChanged();
+
+        // 添加示例会话
+        sessions.add(new Session("会话 1", "这是第一个会话"));
+        sessions.add(new Session("会话 2", "这是第二个会话"));
+        sessions.add(new Session("会话 3", "这是第三个会话"));
+
+        sessionAdapter.notifyDataSetChanged();
+    }
+
+    private void sendMessage() {
+        String text = inputMessage.getText().toString().trim();
+        if (!text.isEmpty()) {
+            // 添加用户消息
+            messages.add(new Message("User", text, true));
+            messageAdapter.notifyItemInserted(messages.size() - 1);
+            messageList.scrollToPosition(messages.size() - 1);
+
+            // 清空输入框
+            inputMessage.setText("");
+
+            // 模拟 AI 回复
+            simulateAiResponse(text);
+        }
+    }
+
+    private void simulateAiResponse(String userMessage) {
+        // 延迟模拟 AI 回复
+        messageList.postDelayed(() -> {
+            String response = generateResponse(userMessage);
+            messages.add(new Message("Hermes", response, false));
+            messageAdapter.notifyItemInserted(messages.size() - 1);
+            messageList.scrollToPosition(messages.size() - 1);
+        }, 1000);
+    }
+
+    private String generateResponse(String userMessage) {
+        // 简单的回复逻辑
+        if (userMessage.contains("你好") || userMessage.contains("hi") || userMessage.contains("hello")) {
+            return "你好！有什么可以帮助你的吗？";
+        } else if (userMessage.contains("脚本") || userMessage.contains("代码")) {
+            return "好的！这是一个示例代码：\n\n```python\ndef hello():\n    print('Hello, World!')\n\nhello()\n```";
+        } else if (userMessage.contains("谢谢") || userMessage.contains("感谢")) {
+            return "不客气！如果还有其他问题，随时告诉我。";
+        } else {
+            return "我理解你的问题。让我来帮你处理...";
+        }
+    }
+
+    private void createNewChat() {
+        messages.clear();
+        messageAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "新会话已创建", Toast.LENGTH_SHORT).show();
+    }
+
+    private void createNewSession() {
+        Session newSession = new Session("新会话 " + (sessions.size() + 1), "");
+        sessions.add(newSession);
+        sessionAdapter.notifyItemInserted(sessions.size() - 1);
+        Toast.makeText(this, "新会话已创建", Toast.LENGTH_SHORT).show();
+    }
+
+    private void loadSession(Session session) {
+        // 加载会话内容
+        messages.clear();
+        messages.add(new Message("Hermes", "这是 " + session.getTitle() + " 的内容", false));
+        messageAdapter.notifyDataSetChanged();
+        Toast.makeText(this, "已加载: " + session.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    private void refreshCurrentPanel() {
+        Toast.makeText(this, "刷新中...", Toast.LENGTH_SHORT).show();
+        // 实际刷新逻辑
+    }
+
+    // 消息类
+    public static class Message {
+        private String sender;
+        private String content;
+        private boolean isUser;
+
+        public Message(String sender, String content, boolean isUser) {
+            this.sender = sender;
+            this.content = content;
+            this.isUser = isUser;
+        }
+
+        public String getSender() { return sender; }
+        public String getContent() { return content; }
+        public boolean isUser() { return isUser; }
+    }
+
+    // 会话类
+    public static class Session {
+        private String title;
+        private String preview;
+
+        public Session(String title, String preview) {
+            this.title = title;
+            this.preview = preview;
+        }
+
+        public String getTitle() { return title; }
+        public String getPreview() { return preview; }
+    }
+
+    // 消息适配器
+    public static class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
+        private List<Message> messages;
+
+        public MessageAdapter(List<Message> messages) {
+            this.messages = messages;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+            View view = android.view.LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_message, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            Message message = messages.get(position);
+            holder.bind(message);
+        }
+
+        @Override
+        public int getItemCount() {
+            return messages.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            private android.widget.TextView senderText;
+            private android.widget.TextView contentText;
+            private android.view.View messageContainer;
+
+            ViewHolder(View itemView) {
+                super(itemView);
+                senderText = itemView.findViewById(R.id.senderText);
+                contentText = itemView.findViewById(R.id.contentText);
+                messageContainer = itemView.findViewById(R.id.messageContainer);
+            }
+
+            void bind(Message message) {
+                senderText.setText(message.getSender());
+                contentText.setText(message.getContent());
+
+                if (message.isUser()) {
+                    messageContainer.setBackgroundResource(R.drawable.message_user_background);
+                    android.widget.FrameLayout.LayoutParams params = 
+                        (android.widget.FrameLayout.LayoutParams) messageContainer.getLayoutParams();
+                    params.gravity = android.view.Gravity.END;
+                    messageContainer.setLayoutParams(params);
                 } else {
-                    String dataString = data.getDataString();
-                    if (dataString != null) {
-                        results = new Uri[]{Uri.parse(dataString)};
-                    }
+                    messageContainer.setBackgroundResource(R.drawable.message_ai_background);
+                    android.widget.FrameLayout.LayoutParams params = 
+                        (android.widget.FrameLayout.LayoutParams) messageContainer.getLayoutParams();
+                    params.gravity = android.view.Gravity.START;
+                    messageContainer.setLayoutParams(params);
                 }
             }
-
-            fileUploadCallback.onReceiveValue(results);
-            fileUploadCallback = null;
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
+    // 会话适配器
+    public static class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.ViewHolder> {
+        private List<Session> sessions;
+        private OnSessionClickListener listener;
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        webView.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        webView.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        webView.destroy();
-    }
-
-    // JavaScript 接口类
-    public class WebAppInterface {
-        Context context;
-
-        WebAppInterface(Context c) {
-            context = c;
+        public interface OnSessionClickListener {
+            void onSessionClick(Session session);
         }
 
-        @JavascriptInterface
-        public void showToast(String message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        public SessionAdapter(List<Session> sessions, OnSessionClickListener listener) {
+            this.sessions = sessions;
+            this.listener = listener;
         }
 
-        @JavascriptInterface
-        public void shareText(String text) {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-            startActivity(Intent.createChooser(shareIntent, "分享"));
+        @Override
+        public ViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+            View view = android.view.LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_session, parent, false);
+            return new ViewHolder(view);
         }
 
-        @JavascriptInterface
-        public void openInBrowser(String url) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            Session session = sessions.get(position);
+            holder.bind(session);
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onSessionClick(session);
+                }
+            });
         }
 
-        @JavascriptInterface
-        public String getAppVersion() {
-            try {
-                return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            } catch (PackageManager.NameNotFoundException e) {
-                return "1.0.0";
+        @Override
+        public int getItemCount() {
+            return sessions.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            private android.widget.TextView titleText;
+            private android.widget.TextView previewText;
+
+            ViewHolder(View itemView) {
+                super(itemView);
+                titleText = itemView.findViewById(R.id.sessionTitle);
+                previewText = itemView.findViewById(R.id.sessionPreview);
+            }
+
+            void bind(Session session) {
+                titleText.setText(session.getTitle());
+                previewText.setText(session.getPreview());
             }
         }
     }
