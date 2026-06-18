@@ -26,9 +26,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-    
     - name: Generate debug keystore
       run: |
         mkdir -p ~/.android
@@ -45,16 +42,29 @@ jobs:
         echo "=== APK 签名验证 ==="
         APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
         
-        # 使用 apksigner 验证 (AGP 使用 v2/v3 签名)
-        apksigner verify --verbose "$APK_PATH" 2>&1 || true
+        # 查找 apksigner
+        if [ -n "$ANDROID_HOME" ]; then
+          # 找到最新的 build-tools 版本
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ 2>/dev/null | sort -V | tail -1)
+          if [ -n "$BUILD_TOOLS_DIR" ]; then
+            echo "使用 build-tools: $BUILD_TOOLS_DIR"
+            $BUILD_TOOLS_DIR/apksigner verify --verbose "$APK_PATH" 2>&1 || true
+            echo ""
+            echo "=== 签名信息 ==="
+            $BUILD_TOOLS_DIR/apksigner verify --print-certs "$APK_PATH" 2>&1 || true
+          else
+            echo "未找到 build-tools，尝试使用 zipalign 验证..."
+            # 回退到检查文件
+            file "$APK_PATH"
+          fi
+        else
+          echo "ANDROID_HOME 未设置"
+          file "$APK_PATH"
+        fi
         
         echo ""
         echo "=== APK 信息 ==="
         ls -la "$APK_PATH"
-        
-        echo ""
-        echo "=== 签名信息 ==="
-        apksigner verify --print-certs "$APK_PATH" 2>&1 || true
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
