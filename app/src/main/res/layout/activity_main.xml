@@ -323,7 +323,7 @@
                             android:contentDescription="Send"
                             android:src="@drawable/ic_send"
                             android:scaleType="centerInside"
-                            android:tint="#FFFFFF" />
+                            app:tint="#FFFFFF" />
                     </LinearLayout>
                 </LinearLayout>
 
