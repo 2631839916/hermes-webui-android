@@ -39,7 +39,7 @@ public class KanbanFragment extends Fragment {
     private static final int COLOR_MUTED = Color.parseColor("#5C5344");
     private static final int COLOR_ACCENT = Color.parseColor("#B8860B");
 
-    private static final String[] COLUMN_NAMES = {"Ready", "In Progress", "Blocked", "Done"};
+    private static final String[] COLUMN_NAMES = {getString(R.string.kanban_ready), getString(R.string.todo_in_progress), getString(R.string.kanban_blocked), getString(R.string.kanban_done)};
     private static final String[] COLUMN_STATUSES = {"ready", "in_progress", "blocked", "done"};
     private static final int[] COLUMN_COLORS = {
             Color.parseColor("#E3F2FD"), // blue
@@ -251,7 +251,7 @@ public class KanbanFragment extends Fragment {
 
             if (columns[i].isEmpty()) {
                 TextView empty = new TextView(requireContext());
-                empty.setText("No tasks");
+                empty.setText(getString(R.string.no_data));
                 empty.setTextSize(13);
                 empty.setTextColor(COLOR_MUTED);
                 empty.setGravity(Gravity.CENTER);
@@ -345,7 +345,7 @@ public class KanbanFragment extends Fragment {
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error) + ": " + e, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -382,7 +382,7 @@ public class KanbanFragment extends Fragment {
             });
         });
 
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 

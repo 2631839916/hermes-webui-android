@@ -120,7 +120,7 @@ public class ChatFragment extends Fragment {
 
         // Title
         TextView title = new TextView(requireContext());
-        title.setText("Sessions");
+        title.setText(getString(R.string.sessions));
         title.setTextSize(18);
         title.setTextColor(COLOR_TEXT);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -129,7 +129,7 @@ public class ChatFragment extends Fragment {
 
         // New chat button
         TextView btnNew = new TextView(requireContext());
-        btnNew.setText("+ New Chat");
+        btnNew.setText("+" + getString(R.string.new_chat));
         btnNew.setTextColor(Color.WHITE);
         btnNew.setBackgroundColor(COLOR_ACCENT);
         btnNew.setGravity(Gravity.CENTER);
@@ -395,7 +395,7 @@ public class ChatFragment extends Fragment {
                 typingIndicator.setVisibility(View.GONE);
                 isStreaming = false;
                 if (streamBubble[0] != null) {
-                    streamBubble[0].setText("Error: " + error);
+                    streamBubble[0].setText(getString(R.string.error) + ": " + error);
                 }
             }
         });

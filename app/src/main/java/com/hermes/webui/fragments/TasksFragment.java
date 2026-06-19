@@ -84,7 +84,7 @@ public class TasksFragment extends Fragment {
 
         // Refresh button
         TextView btnRefresh = new TextView(requireContext());
-        btnRefresh.setText("Refresh");
+        btnRefresh.setText(getString(R.string.refresh));
         btnRefresh.setTextColor(COLOR_ACCENT);
         btnRefresh.setTextSize(14);
         btnRefresh.setTypeface(Typeface.DEFAULT_BOLD);
@@ -298,11 +298,11 @@ public class TasksFragment extends Fragment {
                     }
                 });
             } catch (Exception e) {
-                Toast.makeText(requireContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.error) + ": " + e, Toast.LENGTH_SHORT).show();
             }
         });
 
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(getString(R.string.cancel), null);
         builder.show();
     }
 
@@ -401,7 +401,7 @@ public class TasksFragment extends Fragment {
             holder.lastRunView.setText("Last run: " + cron.lastRun);
 
             boolean isActive = "active".equalsIgnoreCase(cron.status);
-            holder.statusView.setText(isActive ? "Active" : "Paused");
+            holder.statusView.setText(isActive ? getString(R.string.job_active) : getString(R.string.job_paused));
             holder.statusView.setTextColor(isActive ? COLOR_GREEN : COLOR_RED);
             holder.statusView.setBackgroundColor(isActive ?
                     Color.parseColor("#E8F5E9") : Color.parseColor("#FFEBEE"));

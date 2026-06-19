@@ -116,7 +116,7 @@ public class WorkspacesFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             WorkspaceItem item = workspaces.get(position);
             holder.title.setText(item.name);
-            holder.status.setText(item.active ? "Active" : "Inactive");
+            holder.status.setText(item.active ? getString(R.string.job_active) : "Inactive");
             holder.assignee.setText(item.path);
         }
 

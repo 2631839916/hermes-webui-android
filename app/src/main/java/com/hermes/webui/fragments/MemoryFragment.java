@@ -65,7 +65,7 @@ public class MemoryFragment extends Fragment {
         header.setLayoutParams(headerParams);
 
         TextView title = new TextView(requireContext());
-        title.setText("Memory");
+        title.setText(getString(R.string.panel_memory));
         title.setTextSize(22);
         title.setTextColor(COLOR_TEXT);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -79,7 +79,7 @@ public class MemoryFragment extends Fragment {
         header.addView(countView);
 
         TextView btnRefresh = new TextView(requireContext());
-        btnRefresh.setText("Refresh");
+        btnRefresh.setText(getString(R.string.refresh));
         btnRefresh.setTextColor(COLOR_ACCENT);
         btnRefresh.setTextSize(14);
         btnRefresh.setTypeface(Typeface.DEFAULT_BOLD);
@@ -198,7 +198,7 @@ public class MemoryFragment extends Fragment {
 
         // Timestamp
         if (!memory.timestamp.isEmpty()) {
-            addDetailRow(layout, "Created", memory.timestamp);
+            addDetailRow(layout, getString(R.string.created), memory.timestamp);
         }
 
         // Content

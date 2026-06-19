@@ -32,7 +32,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_menu"
                 android:scaleType="centerInside"
-                android:contentDescription="Menu" />
+                android:contentDescription="@string/menu" />
 
             <ImageView
                 android:layout_width="32dp"
@@ -58,7 +58,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_new_chat"
                 android:scaleType="centerInside"
-                android:contentDescription="New" />
+                android:contentDescription="@string/new_chat" />
 
             <ImageButton
                 android:id="@+id/btnReload"
@@ -67,7 +67,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_refresh"
                 android:scaleType="centerInside"
-                android:contentDescription="Reload" />
+                android:contentDescription="@string/reload" />
         </LinearLayout>
 
         <!-- 主体 -->
@@ -152,7 +152,7 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_attach"
                             android:scaleType="centerInside"
-                            android:contentDescription="Attach" />
+                            android:contentDescription="@string/attach" />
 
                         <EditText
                             android:id="@+id/inputMessage"
@@ -162,7 +162,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_marginEnd="8dp"
                             android:background="@drawable/input_background"
-                            android:hint="输入消息..."
+                            android:hint="@string/input_hint"
                             android:inputType="textMultiLine"
                             android:maxLines="5"
                             android:minHeight="48dp"
@@ -182,34 +182,34 @@
                             android:src="@drawable/ic_send"
                             android:scaleType="centerInside"
                             android:tint="#FFFFFF"
-                            android:contentDescription="Send" />
+                            android:contentDescription="@string/send" />
                     </LinearLayout>
                 </LinearLayout>
 
                 <!-- 其他面板 -->
                 <LinearLayout android:id="@+id/panelTasks" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone" android:background="#FEFCF7">
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="Tasks" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="任务管理面板" android:textColor="#5C5344" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="@string/panel_tasks" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="@string/panel_tasks" android:textColor="#5C5344" android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/panelKanban" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone" android:background="#FEFCF7">
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="Kanban" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="看板视图" android:textColor="#5C5344" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="@string/panel_kanban" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="@string/panel_kanban" android:textColor="#5C5344" android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/panelSkills" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone" android:background="#FEFCF7">
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="Skills" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="技能管理" android:textColor="#5C5344" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="@string/panel_skills" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="@string/panel_skills" android:textColor="#5C5344" android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/panelMemory" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone" android:background="#FEFCF7">
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="Memory" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="记忆管理" android:textColor="#5C5344" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="@string/panel_memory" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="@string/panel_memory" android:textColor="#5C5344" android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/panelSettings" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone" android:background="#FEFCF7">
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="Settings" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="设置" android:textColor="#5C5344" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:text="@string/panel_settings" android:textColor="#1A1610" android:textSize="24sp" android:textStyle="bold" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="24dp" android:paddingEnd="24dp" android:text="@string/panel_settings" android:textColor="#5C5344" android:textSize="14sp" />
                 </LinearLayout>
 
             </FrameLayout>
@@ -240,7 +240,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="会话列表"
+                android:text="@string/sessions"
                 android:textColor="#1A1610"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -252,7 +252,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_close"
                 android:scaleType="centerInside"
-                android:contentDescription="Close" />
+                android:contentDescription="@string/close" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -273,7 +273,7 @@
             android:src="@drawable/ic_add"
             android:scaleType="centerInside"
             android:tint="#FFFFFF"
-            android:contentDescription="New session" />
+            android:contentDescription="@string/new_session" />
     </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

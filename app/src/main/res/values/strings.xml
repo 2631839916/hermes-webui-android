@@ -1,4 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hermes WebUI</string>
+    
+    <!-- 导航栏 -->
+    <string name="nav_chat">聊天</string>
+    <string name="nav_tasks">任务</string>
+    <string name="nav_kanban">看板</string>
+    <string name="nav_skills">技能</string>
+    <string name="nav_memory">记忆</string>
+    <string name="nav_spaces">空间</string>
+    <string name="nav_profiles">配置</string>
+    <string name="nav_todos">待办</string>
+    <string name="nav_insights">洞察</string>
+    <string name="nav_logs">日志</string>
+    <string name="nav_settings">设置</string>
+    
+    <!-- 通用 -->
+    <string name="loading">加载中...</string>
+    <string name="error">错误</string>
+    <string name="refresh">刷新</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="create">创建</string>
+    <string name="new_chat">新对话</string>
+    <string name="new_session">新会话</string>
+    <string name="sessions">会话列表</string>
+    <string name="search">搜索...</string>
+    <string name="filter">筛选</string>
+    <string name="menu">菜单</string>
+    <string name="close">关闭</string>
+    <string name="send">发送</string>
+    <string name="input_hint">输入消息...</string>
+    <string name="attach">附件</string>
+    <string name="reload">刷新</string>
+    
+    <!-- 面板标题 -->
+    <string name="panel_chat">聊天</string>
+    <string name="panel_tasks">定时任务</string>
+    <string name="panel_kanban">看板</string>
+    <string name="panel_skills">技能管理</string>
+    <string name="panel_memory">记忆管理</string>
+    <string name="panel_spaces">工作空间</string>
+    <string name="panel_profiles">Agent 配置</string>
+    <string name="panel_todos">待办事项</string>
+    <string name="panel_insights">使用洞察</string>
+    <string name="panel_logs">运行日志</string>
+    <string name="panel_settings">设置</string>
+    
+    <!-- 任务 -->
+    <string name="new_job">新建任务</string>
+    <string name="job_schedule">调度</string>
+    <string name="job_status">状态</string>
+    <string name="job_active">运行中</string>
+    <string name="job_paused">已暂停</string>
+    <string name="run_now">立即执行</string>
+    <string name="pause">暂停</string>
+    <string name="resume">恢复</string>
+    <string name="duplicate">复制</string>
+    
+    <!-- 看板 -->
+    <string name="kanban_new_task">新建任务</string>
+    <string name="kanban_ready">待处理</string>
+    <string name="kanban_in_progress">进行中</string>
+    <string name="kanban_blocked">已阻塞</string>
+    <string name="kanban_done">已完成</string>
+    <string name="kanban_archived">已归档</string>
+    
+    <!-- 技能 -->
+    <string name="new_skill">新建技能</string>
+    <string name="skill_name">技能名称</string>
+    <string name="skill_category">分类</string>
+    <string name="skill_description">描述</string>
+    <string name="search_skills">搜索技能...</string>
+    
+    <!-- 记忆 -->
+    <string name="memory_target">目标</string>
+    <string name="memory_content">内容</string>
+    <string name="memory_user">用户</string>
+    <string name="memory_system">系统</string>
+    
+    <!-- 待办 -->
+    <string name="new_todo">新建待办</string>
+    <string name="todo_pending">待处理</string>
+    <string name="todo_in_progress">进行中</string>
+    <string name="todo_completed">已完成</string>
+    <string name="todo_cancelled">已取消</string>
+    
+    <!-- 设置 -->
+    <string name="settings_model">模型</string>
+    <string name="settings_provider">提供商</string>
+    <string name="settings_theme">主题</string>
+    <string name="settings_language">语言</string>
+    <string name="settings_about">关于</string>
+    
+    <!-- 消息 -->
+    <string name="thinking">思考中...</string>
+    <string name="connection_error">连接失败</string>
+    <string name="no_data">暂无数据</string>
+    <string name="confirm_delete">确认删除？</string>
+    <string name="deleted">已删除</string>
+    <string name="created">已创建</string>
+    <string name="saved">已保存</string>
+    <string name="loaded">已加载</string>
+    <string name="refreshing">刷新中...</string>
+    
+    <!-- 工作空间 -->
+    <string name="workspace_add">添加空间</string>
+    <string name="workspace_use">使用此空间</string>
+    <string name="workspace_rename">重命名</string>
+    <string name="workspace_remove">移除</string>
+    
+    <!-- 配置 -->
+    <string name="profile_activate">激活</string>
+    <string name="profile_delete">删除配置</string>
+    <string name="new_profile">新建配置</string>
+    
+    <!-- 洞察 -->
+    <string name="insights_7d">近7天</string>
+    <string name="insights_30d">近30天</string>
+    <string name="insights_90d">近90天</string>
+    <string name="insights_all">全部</string>
+    <string name="insights_tokens">Token 用量</string>
+    <string name="insights_sessions">会话数</string>
+    
+    <!-- 日志 -->
+    <string name="log_level">级别</string>
+    <string name="log_time">时间</string>
+    <string name="log_message">消息</string>
 </resources>

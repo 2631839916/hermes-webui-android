@@ -146,7 +146,7 @@ public class ProfilesFragment extends Fragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             ProfileItem item = profiles.get(position);
             holder.title.setText(item.name);
-            holder.status.setText(item.active ? "Active" : "Inactive");
+            holder.status.setText(item.active ? getString(R.string.job_active) : "Inactive");
             holder.assignee.setVisibility(View.GONE);
 
             holder.itemView.setOnClickListener(v -> switchProfile(item.name));

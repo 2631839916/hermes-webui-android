@@ -68,7 +68,7 @@ public class TodosFragment extends Fragment {
         header.setLayoutParams(headerParams);
 
         TextView title = new TextView(requireContext());
-        title.setText("Todos");
+        title.setText(getString(R.string.panel_todos));
         title.setTextSize(22);
         title.setTextColor(COLOR_TEXT);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -82,7 +82,7 @@ public class TodosFragment extends Fragment {
         header.addView(countView);
 
         TextView btnRefresh = new TextView(requireContext());
-        btnRefresh.setText("Refresh");
+        btnRefresh.setText(getString(R.string.refresh));
         btnRefresh.setTextColor(COLOR_ACCENT);
         btnRefresh.setTextSize(14);
         btnRefresh.setTypeface(Typeface.DEFAULT_BOLD);
@@ -96,7 +96,7 @@ public class TodosFragment extends Fragment {
         LinearLayout filterRow = new LinearLayout(requireContext());
         filterRow.setOrientation(LinearLayout.HORIZONTAL);
         filterRow.setPadding(0, 0, 0, dp(12));
-        String[] filters = {"All", "Pending", "In Progress", "Completed", "Cancelled"};
+        String[] filters = {"All", getString(R.string.todo_pending), getString(R.string.todo_in_progress), getString(R.string.todo_completed), getString(R.string.todo_cancelled)};
         TextView[] filterButtons = new TextView[filters.length];
         for (int i = 0; i < filters.length; i++) {
             TextView btn = new TextView(requireContext());
@@ -449,12 +449,12 @@ public class TodosFragment extends Fragment {
         }
 
         private String formatStatus(String status) {
-            if (status == null) return "Pending";
+            if (status == null) return getString(R.string.todo_pending);
             switch (status.toLowerCase()) {
-                case "in_progress": return "In Progress";
-                case "completed": return "Completed";
-                case "cancelled": return "Cancelled";
-                default: return "Pending";
+                case "in_progress": return getString(R.string.todo_in_progress);
+                case "completed": return getString(R.string.todo_completed);
+                case "cancelled": return getString(R.string.todo_cancelled);
+                default: return getString(R.string.todo_pending);
             }
         }
 

@@ -72,7 +72,7 @@ public class SkillsFragment extends Fragment {
         header.setLayoutParams(headerParams);
 
         TextView title = new TextView(requireContext());
-        title.setText("Skills");
+        title.setText(getString(R.string.panel_skills));
         title.setTextSize(22);
         title.setTextColor(COLOR_TEXT);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -86,7 +86,7 @@ public class SkillsFragment extends Fragment {
         header.addView(countView);
 
         TextView btnRefresh = new TextView(requireContext());
-        btnRefresh.setText("Refresh");
+        btnRefresh.setText(getString(R.string.refresh));
         btnRefresh.setTextColor(COLOR_ACCENT);
         btnRefresh.setTextSize(14);
         btnRefresh.setTypeface(Typeface.DEFAULT_BOLD);
@@ -98,7 +98,7 @@ public class SkillsFragment extends Fragment {
 
         // Search bar
         searchInput = new EditText(requireContext());
-        searchInput.setHint("Search skills...");
+        searchInput.setHint(getString(R.string.search_skills));
         searchInput.setTextColor(COLOR_TEXT);
         searchInput.setHintTextColor(COLOR_MUTED);
         searchInput.setBackgroundColor(Color.WHITE);
