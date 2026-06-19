@@ -221,7 +221,7 @@ public class ChatFragment extends Fragment {
         if (api == null) return;
         api.getSessions(new HermesApi.ApiCallback<JSONArray>() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 sessions.clear();
                 for (int i = 0; i < result.length() && i < 50; i++) {
                     try {
@@ -257,7 +257,7 @@ public class ChatFragment extends Fragment {
         if (api == null) return;
         api.getSession(session.id, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 JSONArray msgs = result.optJSONArray("messages");
                 if (msgs != null) {
                     for (int i = 0; i < msgs.length(); i++) {
@@ -299,7 +299,7 @@ public class ChatFragment extends Fragment {
 
         api.sendChatMessage(currentSessionId, text, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 if (currentSessionId == null) {
                     currentSessionId = result.optString("session_id", null);
@@ -522,7 +522,7 @@ public class ChatFragment extends Fragment {
         super.onDestroyView();
         if (api != null && currentStreamId != null) {
             api.cancelChat(currentStreamId, new HermesApi.ApiCallback<JSONObject>() {
-                @Override public void onSuccess(JSONArray result) {}
+                @Override public void onSuccess(JSONObject result) {}
                 @Override public void onError(String error) {}
             });
         }
