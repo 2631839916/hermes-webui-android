@@ -40,7 +40,7 @@ public class KanbanFragment extends Fragment {
     private static final int COLOR_MUTED = Color.parseColor("#5C5344");
     private static final int COLOR_ACCENT = Color.parseColor("#B8860B");
 
-    private static final String[] COLUMN_NAMES = {getString(R.string.kanban_ready), getString(R.string.todo_in_progress), getString(R.string.kanban_blocked), getString(R.string.kanban_done)};
+    private static final String[] COLUMN_NAMES = {"待处理", "进行中", "已阻塞", "已完成"};
     private static final String[] COLUMN_STATUSES = {"ready", "in_progress", "blocked", "done"};
     private static final int[] COLUMN_COLORS = {
             Color.parseColor("#E3F2FD"), // blue
