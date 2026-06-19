@@ -30,10 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private HermesApi api;
     private ImageButton[] navButtons;
     private int selectedNav = 0;
+    private String currentSessionId;
     private final List<SessionItem> sessions = new ArrayList<>();
     private SessionAdapter sessionAdapter;
 
     public HermesApi getApi() { return api; }
+    public String getCurrentSessionId() { return currentSessionId; }
+    public void setCurrentSessionId(String id) { this.currentSessionId = id; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +103,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showFragment(Fragment f) {
+        if (f instanceof ChatFragment && currentSessionId != null) {
+            Bundle args = new Bundle();
+            args.putString("session_id", currentSessionId);
+            f.setArguments(args);
+        }
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.contentFrame, f)
             .commit();
