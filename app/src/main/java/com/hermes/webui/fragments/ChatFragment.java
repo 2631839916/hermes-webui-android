@@ -59,6 +59,7 @@ public class ChatFragment extends Fragment {
     private RecyclerView sessionList;
     private EditText inputMessage;
     private ImageButton btnSend;
+    private View connectionDot;
     private ProgressBar typingIndicator;
     private ScrollView chatScrollView;
     private LinearLayout messageContainer;
@@ -87,8 +88,11 @@ public class ChatFragment extends Fragment {
         }
         if (api == null) {
             Toast.makeText(requireContext(), "API不可用", Toast.LENGTH_SHORT).show();
+            updateConnectionStatus(false);
             return;
         }
+        // Check connection
+        checkConnection();
         // Check if a session_id was passed
         Bundle args = getArguments();
         if (args != null && args.containsKey("session_id")) {
@@ -97,6 +101,41 @@ public class ChatFragment extends Fragment {
                 loadSessionMessages(new SessionItem(sid, "会话", ""));
             }
         }
+    }
+    
+    private void checkConnection() {
+        if (api == null) { updateConnectionStatus(false); return; }
+        api.healthCheck(new HermesApi.ApiCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                if (!isAdded()) return;
+                updateConnectionStatus(true);
+            }
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                updateConnectionStatus(false);
+            }
+        });
+    }
+    
+    private void updateConnectionStatus(boolean connected) {
+        if (connectionDot == null || !isAdded()) return;
+        getActivity().runOnUiThread(() -> {
+            connectionDot.setBackgroundColor(connected ? Color.GREEN : Color.RED);
+            // Find status text
+            View parent = (View) connectionDot.getParent();
+            if (parent instanceof LinearLayout) {
+                LinearLayout statusBar = (LinearLayout) parent;
+                for (int i = 0; i < statusBar.getChildCount(); i++) {
+                    View child = statusBar.getChildAt(i);
+                    if (child instanceof TextView) {
+                        ((TextView) child).setText(connected ? "已连接" : "未连接");
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     private LinearLayout createSidebar() {
@@ -147,6 +186,33 @@ public class ChatFragment extends Fragment {
         chatArea.setBackgroundColor(COLOR_BG);
         chatArea.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
 
+        // Connection status bar
+        LinearLayout statusBar = new LinearLayout(requireContext());
+        statusBar.setOrientation(LinearLayout.HORIZONTAL);
+        statusBar.setBackgroundColor(COLOR_SIDEBAR);
+        statusBar.setPadding(dp(12), dp(8), dp(12), dp(8));
+        statusBar.setGravity(Gravity.CENTER_VERTICAL);
+        statusBar.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        
+        // Connection dot (green = connected, red = disconnected)
+        connectionDot = new View(requireContext());
+        connectionDot.setBackgroundColor(Color.RED);
+        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dp(10), dp(10));
+        dotParams.setMargins(0, 0, dp(8), 0);
+        connectionDot.setLayoutParams(dotParams);
+        statusBar.addView(connectionDot);
+        
+        // Status text
+        TextView statusText = new TextView(requireContext());
+        statusText.setText("连接中...");
+        statusText.setTextSize(12);
+        statusText.setTextColor(COLOR_MUTED);
+        statusText.setTag("statusText");
+        statusBar.addView(statusText);
+        
+        chatArea.addView(statusBar);
+
         // Messages area using ScrollView + LinearLayout for simplicity
         chatScrollView = new ScrollView(requireContext());
         chatScrollView.setFillViewport(true);
@@ -180,7 +246,7 @@ public class ChatFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         inputMessage = new EditText(requireContext());
-        inputMessage.setHint("Type a message...");
+        inputMessage.setHint(getString(R.string.input_hint));
         inputMessage.setTextColor(COLOR_TEXT);
         inputMessage.setHintTextColor(COLOR_MUTED);
         inputMessage.setBackgroundColor(Color.WHITE);
