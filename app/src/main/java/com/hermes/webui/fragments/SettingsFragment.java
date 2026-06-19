@@ -62,19 +62,16 @@ public class SettingsFragment extends Fragment {
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
                 settings.clear();
-                try {
-                    JSONArray data = response.optJSONArray("settings");
-                    if (data != null) {
-                        for (int i = 0; i < data.length(); i++) {
-                            JSONObject obj = data.getJSONObject(i);
-                            settings.add(new SettingItem(
-                                    obj.optString("key", ""),
-                                    obj.optString("value", "")
-                            ));
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.e("Hermes", e.getMessage());
+                // API返回 {key: value, key: value, ...} 直接遍历keys
+                java.util.Iterator<String> keys = response.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    try {
+                        Object val = response.get(key);
+                        String value = (val != null) ? val.toString() : "";
+                        if (value.length() > 100) value = value.substring(0, 100) + "...";
+                        settings.add(new SettingItem(key, value));
+                    } catch (Exception ignored) {}
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
