@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -27,89 +28,83 @@ public class HermesApi {
         void onError(String error);
     }
 
-    public void setBaseUrl(String url) {
-        this.baseUrl = url;
+    public void setBaseUrl(String url) { this.baseUrl = url; }
+    public String getBaseUrl() { return baseUrl; }
+
+    private JSONArray safeArray(JSONObject json, String key) {
+        JSONArray arr = json.optJSONArray(key);
+        return arr != null ? arr : new JSONArray();
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    // ===== 会话管理 =====
-    public void getSessions(ApiCallback<JSONArray> callback) {
+    // Sessions
+    public void getSessions(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/sessions");
-                JSONObject json = new JSONObject(resp);
-                JSONArray sessions = json.getJSONArray("sessions");
-                mainHandler.post(() -> callback.onSuccess(sessions));
+                String r = httpGet(baseUrl + "/api/sessions");
+                JSONObject j = new JSONObject(r);
+                JSONArray s = safeArray(j, "sessions");
+                mainHandler.post(() -> cb.onSuccess(s));
             } catch (Exception e) {
-                Log.e(TAG, "getSessions 失败", e);
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void getSession(String sessionId, ApiCallback<JSONObject> callback) {
+    public void getSession(String sid, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/session?session_id=" + sessionId);
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json));
+                String r = httpGet(baseUrl + "/api/session?session_id=" + sid);
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                Log.e(TAG, "getSession 失败", e);
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void deleteSession(String sessionId, ApiCallback<JSONObject> callback) {
+    public void deleteSession(String sid, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/session/delete", "{\"session_id\":\"" + sessionId + "\"}");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/session/delete", "{\"session_id\":\"" + sid + "\"}");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== 聊天 =====
-    public void sendChatMessage(String sessionId, String message, ApiCallback<JSONObject> callback) {
+    // Chat
+    public void sendChatMessage(String sid, String msg, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 JSONObject body = new JSONObject();
-                if (sessionId != null) body.put("session_id", sessionId);
-                body.put("message", message);
-                String resp = httpPost(baseUrl + "/api/chat/start", body.toString());
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json));
+                try { if (sid != null) body.put("session_id", sid); body.put("message", msg); } catch (JSONException ignored) {}
+                String r = httpPost(baseUrl + "/api/chat/start", body.toString());
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                Log.e(TAG, "sendChatMessage 失败", e);
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void cancelChat(String streamId, ApiCallback<JSONObject> callback) {
+    public void cancelChat(String streamId, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/chat/cancel", "{\"stream_id\":\"" + streamId + "\"}");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/chat/cancel", "{\"stream_id\":\"" + streamId + "\"}");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // SSE 流式响应
+    // SSE
     public interface SseCallback {
         void onData(String data);
         void onComplete();
         void onError(String error);
     }
 
-    public void streamChat(String streamId, SseCallback callback) {
+    public void streamChat(String streamId, SseCallback cb) {
         executor.execute(() -> {
             try {
                 URL url = new URL(baseUrl + "/api/chat/stream?stream_id=" + streamId);
@@ -118,264 +113,253 @@ public class HermesApi {
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(120000);
                 conn.setRequestProperty("Accept", "text/event-stream");
-
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String line;
-                StringBuilder buffer = new StringBuilder();
-
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("data: ")) {
                         String data = line.substring(6).trim();
-                        if ("[DONE]".equals(data)) {
-                            mainHandler.post(callback::onComplete);
-                            break;
-                        }
-                        mainHandler.post(() -> callback.onData(data));
+                        if ("[DONE]".equals(data)) { mainHandler.post(cb::onComplete); break; }
+                        mainHandler.post(() -> cb.onData(data));
                     }
                 }
                 reader.close();
                 conn.disconnect();
             } catch (Exception e) {
-                Log.e(TAG, "streamChat 失败", e);
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Cron 任务 =====
-    public void getCrons(ApiCallback<JSONArray> callback) {
+    // Crons
+    public void getCrons(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/crons");
-                JSONObject json = new JSONObject(resp);
-                JSONArray crons = json.optJSONArray("crons") != null ? json.optJSONArray("crons") : new JSONArray();
-                mainHandler.post(() -> callback.onSuccess(crons));
+                String r = httpGet(baseUrl + "/api/crons");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "crons")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void createCron(JSONObject cronData, ApiCallback<JSONObject> callback) {
+    public void createCron(JSONObject data, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/crons/create", cronData.toString());
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/crons/create", data.toString());
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void deleteCron(String jobId, ApiCallback<JSONObject> callback) {
+    public void deleteCron(String jobId, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/crons/delete", "{\"job_id\":\"" + jobId + "\"}");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/crons/delete", "{\"job_id\":\"" + jobId + "\"}");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Kanban =====
-    public void getKanban(ApiCallback<JSONObject> callback) {
+    // Kanban
+    public void getKanban(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/kanban");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/kanban");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void createKanbanTask(String title, ApiCallback<JSONObject> callback) {
+    public void createKanbanTask(String title, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/kanban/task", "{\"title\":\"" + escapeJson(title) + "\"}");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/kanban/task", "{\"title\":\"" + esc(title) + "\"}");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void updateKanbanTask(String taskId, JSONObject data, ApiCallback<JSONObject> callback) {
+    public void updateKanbanTask(String taskId, JSONObject data, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                data.put("task_id", taskId);
-                String resp = httpPost(baseUrl + "/api/kanban/task/update", data.toString());
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                try { data.put("task_id", taskId); } catch (JSONException ignored) {}
+                String r = httpPost(baseUrl + "/api/kanban/task/update", data.toString());
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Skills =====
-    public void getSkills(ApiCallback<JSONArray> callback) {
+    // Skills
+    public void getSkills(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/skills");
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("skills") != null ? json.optJSONArray("skills") : new JSONArray()));
+                String r = httpGet(baseUrl + "/api/skills");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "skills")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void getSkillDetail(String name, ApiCallback<JSONObject> callback) {
+    public void getSkillDetail(String name, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/skills/detail?name=" + name);
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/skills/detail?name=" + name);
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Memory =====
-    public void getMemory(ApiCallback<JSONArray> callback) {
+    // Memory
+    public void getMemory(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/memory");
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("memories") != null ? json.optJSONArray("memories") : new JSONArray()));
+                String r = httpGet(baseUrl + "/api/memory");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "memories")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Todos =====
-    public void getTodos(ApiCallback<JSONArray> callback) {
+    // Todos
+    public void getTodos(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/todos");
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("todos") != null ? json.optJSONArray("todos") : new JSONArray()));
+                String r = httpGet(baseUrl + "/api/todos");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "todos")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Workspaces =====
-    public void getWorkspaces(ApiCallback<JSONArray> callback) {
+    // Workspaces
+    public void getWorkspaces(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/workspaces");
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("workspaces") != null ? json.optJSONArray("workspaces") : new JSONArray()));
+                String r = httpGet(baseUrl + "/api/workspaces");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "workspaces")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Profiles =====
-    public void getProfiles(ApiCallback<JSONArray> callback) {
+    // Profiles
+    public void getProfiles(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/profiles");
-                JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("profiles") != null ? json.optJSONArray("profiles") : new JSONArray()));
+                String r = httpGet(baseUrl + "/api/profiles");
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(safeArray(j, "profiles")));
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Insights =====
-    public void getInsights(String period, ApiCallback<JSONObject> callback) {
+    // Insights
+    public void getInsights(String period, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/insights?period=" + (period != null ? period : "7d"));
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/insights?period=" + (period != null ? period : "7d"));
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Logs =====
-    public void getLogs(ApiCallback<JSONObject> callback) {
+    // Logs
+    public void getLogs(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/logs");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/logs");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Settings =====
-    public void getSettings(ApiCallback<JSONObject> callback) {
+    // Settings
+    public void getSettings(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/settings");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/settings");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    public void updateSettings(JSONObject settings, ApiCallback<JSONObject> callback) {
+    public void updateSettings(JSONObject s, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpPost(baseUrl + "/api/settings", settings.toString());
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpPost(baseUrl + "/api/settings", s.toString());
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== Models =====
-    public void getModels(ApiCallback<JSONObject> callback) {
+    // Models
+    public void getModels(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/api/models");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/api/models");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== 健康检查 =====
-    public void healthCheck(ApiCallback<JSONObject> callback) {
+    // Health
+    public void healthCheck(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                String resp = httpGet(baseUrl + "/health");
-                mainHandler.post(() -> callback.onSuccess(new JSONObject(resp)));
+                String r = httpGet(baseUrl + "/health");
+                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
             } catch (Exception e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
+                mainHandler.post(() -> cb.onError(e.getMessage()));
             }
         });
     }
 
-    // ===== HTTP 工具 =====
+    // HTTP helpers
     private String httpGet(String urlStr) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5000);
         conn.setReadTimeout(30000);
         conn.setRequestProperty("Accept", "application/json");
-
         int code = conn.getResponseCode();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-            code >= 400 ? conn.getErrorStream() : conn.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(code >= 400 ? conn.getErrorStream() : conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) sb.append(line);
         reader.close();
-
         if (code >= 400) throw new Exception("HTTP " + code + ": " + sb.toString());
         return sb.toString();
     }
@@ -388,30 +372,23 @@ public class HermesApi {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Accept", "application/json");
         conn.setDoOutput(true);
-
         OutputStream os = conn.getOutputStream();
         os.write(body.getBytes(StandardCharsets.UTF_8));
         os.flush();
         os.close();
-
         int code = conn.getResponseCode();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-            code >= 400 ? conn.getErrorStream() : conn.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(code >= 400 ? conn.getErrorStream() : conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) sb.append(line);
         reader.close();
-
         if (code >= 400) throw new Exception("HTTP " + code + ": " + sb.toString());
         return sb.toString();
     }
 
-    private String escapeJson(String s) {
-        return s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+    private String esc(String s) {
+        return s.replace("\\\\", "\\\\").replace("\\"", "\\\\\"").replace("\n", "\\\\n").replace("\r", "\\\\r").replace("\t", "\\\\t");
     }
 
-    public void shutdown() {
-        executor.shutdown();
-    }
+    public void shutdown() { executor.shutdown(); }
 }
