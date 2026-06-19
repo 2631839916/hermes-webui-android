@@ -215,6 +215,7 @@ public class ChatFragment extends Fragment {
 
         // 如果没有session，先创建
         if (currentSessionId == null) {
+            Log.d(TAG, "No session, creating new one...");
             typingIndicator.setVisibility(View.VISIBLE);
             api.createSession(new HermesApi.ApiCallback() {
                 @Override
@@ -224,14 +225,16 @@ public class ChatFragment extends Fragment {
                     if (session != null) {
                         currentSessionId = session.optString("session_id", null);
                     }
+                    Log.d(TAG, "Session created: " + currentSessionId);
                     if (currentSessionId != null) {
                         if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
-                    }
-                    actuallySend(text);
+                            ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
+                        }
+                        actuallySend(text);
                     } else {
                         typingIndicator.setVisibility(View.GONE);
                         Toast.makeText(requireContext(), "创建会话失败", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Session creation returned no ID: " + result.toString());
                     }
                 }
                 @Override
@@ -239,13 +242,15 @@ public class ChatFragment extends Fragment {
                     if (!isAdded()) return;
                     typingIndicator.setVisibility(View.GONE);
                     Toast.makeText(requireContext(), "创建会话失败: " + error, Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Session creation error: " + error);
                 }
             });
         } else {
+            Log.d(TAG, "Using existing session: " + currentSessionId);
             if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
-                    }
-                    actuallySend(text);
+                ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
+            }
+            actuallySend(text);
         }
     }
 
@@ -254,6 +259,7 @@ public class ChatFragment extends Fragment {
         inputMessage.setText("");
         typingIndicator.setVisibility(View.VISIBLE);
         isStreaming = true;
+        Log.d(TAG, "Sending message to session=" + currentSessionId + " text=" + text.substring(0, Math.min(text.length(), 50)));
 
         api.sendChatMessage(currentSessionId, text, new HermesApi.ApiCallback() {
             @Override
@@ -261,6 +267,7 @@ public class ChatFragment extends Fragment {
                 if (!isAdded()) return;
                 String streamId = result.optString("stream_id", "");
                 String reply = result.optString("response", result.optString("message", ""));
+                Log.d(TAG, "sendChat OK: streamId=" + streamId + " reply=" + (reply.isEmpty() ? "none" : reply.substring(0, Math.min(reply.length(), 50))));
 
                 if (!streamId.isEmpty()) {
                     streamResponse(streamId);
@@ -269,14 +276,23 @@ public class ChatFragment extends Fragment {
                     isStreaming = false;
                     addBubble("Hermes", reply, false);
                 } else {
+                    // 可能是错误响应
+                    String error = result.optString("error", "");
                     typingIndicator.setVisibility(View.GONE);
                     isStreaming = false;
+                    if (!error.isEmpty()) {
+                        Toast.makeText(requireContext(), "错误: " + error, Toast.LENGTH_LONG).show();
+                        addBubble("Hermes", "错误: " + error, false);
+                    } else {
+                        Log.w(TAG, "Empty response: " + result.toString());
+                    }
                 }
             }
 
             @Override
             public void onError(String error) {
                 if (!isAdded()) return;
+                Log.e(TAG, "sendChat error: " + error);
                 typingIndicator.setVisibility(View.GONE);
                 isStreaming = false;
                 Toast.makeText(requireContext(), "发送失败: " + error, Toast.LENGTH_LONG).show();
@@ -285,6 +301,7 @@ public class ChatFragment extends Fragment {
     }
 
     private void streamResponse(String streamId) {
+        Log.d(TAG, "Starting SSE stream: " + streamId);
         api.streamChat(streamId, new HermesApi.SseCallback() {
             TextView[] bubble = {null};
             StringBuilder contentBuf = new StringBuilder();
@@ -292,12 +309,10 @@ public class ChatFragment extends Fragment {
             @Override
             public void onData(String data) {
                 if (!isAdded()) return;
-                // data 格式: "event_type\ndata_json"
-                // 但 HermesApi 已经拆分了，这里只收到 data 部分
+                // data 格式: {"text": "..."}
                 requireActivity().runOnUiThread(() -> {
                     try {
                         JSONObject obj = new JSONObject(data);
-                        // 只处理 token 事件的 text 字段（实际回复内容）
                         String text = obj.optString("text", "");
                         if (!text.isEmpty()) {
                             contentBuf.append(text);
@@ -309,13 +324,16 @@ public class ChatFragment extends Fragment {
                                 scrollToBottom();
                             }
                         }
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        Log.e(TAG, "SSE parse error: " + data, e);
+                    }
                 });
             }
 
             @Override
             public void onComplete() {
                 if (!isAdded()) return;
+                Log.d(TAG, "SSE complete, content length=" + contentBuf.length());
                 requireActivity().runOnUiThread(() -> {
                     typingIndicator.setVisibility(View.GONE);
                     isStreaming = false;
@@ -328,11 +346,12 @@ public class ChatFragment extends Fragment {
             @Override
             public void onError(String error) {
                 if (!isAdded()) return;
+                Log.e(TAG, "SSE error: " + error);
                 requireActivity().runOnUiThread(() -> {
                     typingIndicator.setVisibility(View.GONE);
                     isStreaming = false;
                     if (bubble[0] == null) {
-                        addBubble("Hermes", "错误: " + error, false);
+                        addBubble("Hermes", "连接错误: " + error, false);
                     }
                 });
             }
