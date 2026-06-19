@@ -287,20 +287,25 @@ public class ChatFragment extends Fragment {
     private void streamResponse(String streamId) {
         api.streamChat(streamId, new HermesApi.SseCallback() {
             TextView[] bubble = {null};
+            StringBuilder contentBuf = new StringBuilder();
 
             @Override
             public void onData(String data) {
                 if (!isAdded()) return;
+                // data 格式: "event_type\ndata_json"
+                // 但 HermesApi 已经拆分了，这里只收到 data 部分
                 requireActivity().runOnUiThread(() -> {
                     try {
                         JSONObject obj = new JSONObject(data);
-                        String content = obj.optString("content", obj.optString("text", ""));
-                        if (!content.isEmpty()) {
+                        // 只处理 token 事件的 text 字段（实际回复内容）
+                        String text = obj.optString("text", "");
+                        if (!text.isEmpty()) {
+                            contentBuf.append(text);
                             if (bubble[0] == null) {
-                                View v = addBubble("Hermes", content, false);
+                                View v = addBubble("Hermes", contentBuf.toString(), false);
                                 bubble[0] = findTextView(v);
                             } else {
-                                bubble[0].append(content);
+                                bubble[0].setText(contentBuf.toString());
                                 scrollToBottom();
                             }
                         }
@@ -314,6 +319,9 @@ public class ChatFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     typingIndicator.setVisibility(View.GONE);
                     isStreaming = false;
+                    if (bubble[0] == null && contentBuf.length() == 0) {
+                        addBubble("Hermes", "（无回复）", false);
+                    }
                 });
             }
 
@@ -323,6 +331,9 @@ public class ChatFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     typingIndicator.setVisibility(View.GONE);
                     isStreaming = false;
+                    if (bubble[0] == null) {
+                        addBubble("Hermes", "错误: " + error, false);
+                    }
                 });
             }
         });
