@@ -49,6 +49,8 @@ public class ChatFragment extends Fragment {
     private HermesApi api;
     private String currentSessionId;
     private boolean isStreaming = false;
+    private static Boolean lastConnectionStatus = null;
+    private static long lastCheckTime = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -170,13 +172,22 @@ public class ChatFragment extends Fragment {
     }
 
     private void checkConnection() {
+        // 30秒内不重复检查
+        long now = System.currentTimeMillis();
+        if (lastConnectionStatus != null && (now - lastCheckTime) < 30000) {
+            updateStatus(lastConnectionStatus);
+            return;
+        }
+        lastCheckTime = now;
         api.healthCheck(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject result) {
+                lastConnectionStatus = true;
                 if (isAdded()) updateStatus(true);
             }
             @Override
             public void onError(String error) {
+                lastConnectionStatus = false;
                 if (isAdded()) updateStatus(false);
             }
         });
