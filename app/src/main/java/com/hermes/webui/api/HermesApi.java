@@ -120,11 +120,19 @@ public class HermesApi {
                 conn.setRequestProperty("Accept", "text/event-stream");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String line;
+                String currentEvent = "";
                 while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("data: ")) {
+                    if (line.startsWith("event: ")) {
+                        currentEvent = line.substring(7).trim();
+                    } else if (line.startsWith("data: ")) {
                         String data = line.substring(6).trim();
                         if ("[DONE]".equals(data)) { mainHandler.post(cb::onComplete); break; }
-                        mainHandler.post(() -> cb.onData(data));
+                        // 只处理 token 事件（实际回复内容）
+                        if ("token".equals(currentEvent)) {
+                            mainHandler.post(() -> cb.onData(data));
+                        }
+                    } else if (line.isEmpty()) {
+                        currentEvent = "";
                     }
                 }
                 reader.close();
