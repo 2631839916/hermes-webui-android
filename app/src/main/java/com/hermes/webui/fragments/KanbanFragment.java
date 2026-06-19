@@ -177,7 +177,7 @@ public class KanbanFragment extends Fragment {
 
     private void loadKanban() {
         if (api == null) return;
-        api.getKanban(new HermesApi.ApiCallback<JSONObject>() {
+        api.getKanban(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
@@ -331,7 +331,7 @@ public class KanbanFragment extends Fragment {
         try {
             JSONObject data = new JSONObject();
             data.put("status", newStatus);
-            api.updateKanbanTask(task.taskId, data, new HermesApi.ApiCallback<JSONObject>() {
+            api.updateKanbanTask(task.taskId, data, new HermesApi.ApiCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (!isAdded()) return;
@@ -366,7 +366,7 @@ public class KanbanFragment extends Fragment {
                 Toast.makeText(requireContext(), "Title required", Toast.LENGTH_SHORT).show();
                 return;
             }
-            api.createKanbanTask(title, new HermesApi.ApiCallback<JSONObject>() {
+            api.createKanbanTask(title, new HermesApi.ApiCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
                     if (!isAdded()) return;

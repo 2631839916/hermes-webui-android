@@ -23,35 +23,40 @@ public class HermesApi {
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    public interface ApiCallback<T> {
-        void onSuccess(T result);
+    public interface ApiCallback {
+        void onSuccess(JSONObject result);
         void onError(String error);
     }
 
     public void setBaseUrl(String url) { this.baseUrl = url; }
     public String getBaseUrl() { return baseUrl; }
 
-    private JSONArray safeArr(JSONObject j, String k) {
-        JSONArray a = j.optJSONArray(k);
-        return a != null ? a : new JSONArray();
+    private JSONObject wrapArray(JSONArray arr, String key) {
+        JSONObject obj = new JSONObject();
+        try { obj.put(key, arr); } catch (JSONException ignored) {}
+        return obj;
     }
 
     private JSONObject safeObj(String r) {
         try { return new JSONObject(r); } catch (JSONException e) { return new JSONObject(); }
     }
 
-    public void getSessions(ApiCallback<JSONArray> cb) {
+    private JSONArray safeArr(JSONObject j, String k) {
+        JSONArray a = j.optJSONArray(k);
+        return a != null ? a : new JSONArray();
+    }
+
+    public void getSessions(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/sessions");
                 JSONObject j = new JSONObject(r);
-                JSONArray s = safeArr(j, "sessions");
-                mainHandler.post(() -> cb.onSuccess(s));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getSession(String sid, ApiCallback<JSONObject> cb) {
+    public void getSession(String sid, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/session?session_id=" + sid);
@@ -61,7 +66,7 @@ public class HermesApi {
         });
     }
 
-    public void deleteSession(String sid, ApiCallback<JSONObject> cb) {
+    public void deleteSession(String sid, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/session/delete", "{\"session_id\":\"" + sid + "\"}");
@@ -70,7 +75,7 @@ public class HermesApi {
         });
     }
 
-    public void sendChatMessage(String sid, String msg, ApiCallback<JSONObject> cb) {
+    public void sendChatMessage(String sid, String msg, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String body = "{\"message\":\"" + esc(msg) + "\"" + (sid != null ? ",\"session_id\":\"" + sid + "\"" : "") + "}";
@@ -80,7 +85,7 @@ public class HermesApi {
         });
     }
 
-    public void cancelChat(String streamId, ApiCallback<JSONObject> cb) {
+    public void cancelChat(String streamId, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/chat/cancel", "{\"stream_id\":\"" + streamId + "\"}");
@@ -119,17 +124,17 @@ public class HermesApi {
         });
     }
 
-    public void getCrons(ApiCallback<JSONArray> cb) {
+    public void getCrons(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/crons");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "crons")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void createCron(JSONObject data, ApiCallback<JSONObject> cb) {
+    public void createCron(JSONObject data, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/crons/create", data.toString());
@@ -138,7 +143,7 @@ public class HermesApi {
         });
     }
 
-    public void deleteCron(String jobId, ApiCallback<JSONObject> cb) {
+    public void deleteCron(String jobId, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/crons/delete", "{\"job_id\":\"" + jobId + "\"}");
@@ -147,7 +152,7 @@ public class HermesApi {
         });
     }
 
-    public void getKanban(ApiCallback<JSONObject> cb) {
+    public void getKanban(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/kanban");
@@ -157,7 +162,7 @@ public class HermesApi {
         });
     }
 
-    public void createKanbanTask(String title, ApiCallback<JSONObject> cb) {
+    public void createKanbanTask(String title, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/kanban/task", "{\"title\":\"" + esc(title) + "\"}");
@@ -166,7 +171,7 @@ public class HermesApi {
         });
     }
 
-    public void updateKanbanTask(String taskId, JSONObject data, ApiCallback<JSONObject> cb) {
+    public void updateKanbanTask(String taskId, JSONObject data, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 data.put("task_id", taskId);
@@ -176,17 +181,17 @@ public class HermesApi {
         });
     }
 
-    public void getSkills(ApiCallback<JSONArray> cb) {
+    public void getSkills(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/skills");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "skills")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getSkillDetail(String name, ApiCallback<JSONObject> cb) {
+    public void getSkillDetail(String name, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/skills/detail?name=" + name);
@@ -195,47 +200,47 @@ public class HermesApi {
         });
     }
 
-    public void getMemory(ApiCallback<JSONArray> cb) {
+    public void getMemory(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/memory");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "memories")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getTodos(ApiCallback<JSONArray> cb) {
+    public void getTodos(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/todos");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "todos")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getWorkspaces(ApiCallback<JSONArray> cb) {
+    public void getWorkspaces(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/workspaces");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "workspaces")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getProfiles(ApiCallback<JSONArray> cb) {
+    public void getProfiles(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/profiles");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArr(j, "profiles")));
+                mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    public void getInsights(String period, ApiCallback<JSONObject> cb) {
+    public void getInsights(String period, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/insights?period=" + (period != null ? period : "7d"));
@@ -244,7 +249,7 @@ public class HermesApi {
         });
     }
 
-    public void getLogs(ApiCallback<JSONObject> cb) {
+    public void getLogs(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/logs");
@@ -253,7 +258,7 @@ public class HermesApi {
         });
     }
 
-    public void getSettings(ApiCallback<JSONObject> cb) {
+    public void getSettings(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/settings");
@@ -262,7 +267,7 @@ public class HermesApi {
         });
     }
 
-    public void updateSettings(JSONObject s, ApiCallback<JSONObject> cb) {
+    public void updateSettings(JSONObject s, ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/settings", s.toString());
@@ -271,7 +276,7 @@ public class HermesApi {
         });
     }
 
-    public void getModels(ApiCallback<JSONObject> cb) {
+    public void getModels(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/models");
@@ -280,7 +285,7 @@ public class HermesApi {
         });
     }
 
-    public void healthCheck(ApiCallback<JSONObject> cb) {
+    public void healthCheck(ApiCallback cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/health");

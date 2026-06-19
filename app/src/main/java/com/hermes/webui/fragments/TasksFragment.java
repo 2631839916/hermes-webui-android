@@ -176,14 +176,16 @@ public class TasksFragment extends Fragment {
 
     private void loadCrons() {
         if (api == null) return;
-        api.getCrons(new HermesApi.ApiCallback<JSONArray>() {
+        api.getCrons(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 cronJobs.clear();
-                for (int i = 0; i < result.length(); i++) {
+                JSONArray arr = result.optJSONArray("crons");
+                if (arr == null) arr = new JSONArray();
+                for (int i = 0; i < arr.length(); i++) {
                     try {
-                        JSONObject obj = result.getJSONObject(i);
+                        JSONObject obj = arr.getJSONObject(i);
                         cronJobs.add(new CronItem(
                                 obj.optString("job_id", obj.optString("id", "")),
                                 obj.optString("title", obj.optString("name", "Untitled")),
@@ -209,9 +211,9 @@ public class TasksFragment extends Fragment {
     private void deleteCron(int position) {
         if (api == null || position < 0 || position >= cronJobs.size()) return;
         CronItem item = cronJobs.get(position);
-        api.deleteCron(item.jobId, new HermesApi.ApiCallback<JSONObject>() {
+        api.deleteCron(item.jobId, new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 if (position < cronJobs.size()) {
                     cronJobs.remove(position);
@@ -281,9 +283,9 @@ public class TasksFragment extends Fragment {
                 data.put("schedule", schedule);
                 if (!message.isEmpty()) data.put("message", message);
 
-                api.createCron(data, new HermesApi.ApiCallback<JSONObject>() {
+                api.createCron(data, new HermesApi.ApiCallback() {
                     @Override
-                    public void onSuccess(JSONArray result) {
+                    public void onSuccess(JSONObject result) {
                         if (!isAdded()) return;
                         Toast.makeText(requireContext(), "Task created", Toast.LENGTH_SHORT).show();
                         loadCrons();

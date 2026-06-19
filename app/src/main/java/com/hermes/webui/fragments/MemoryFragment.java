@@ -145,14 +145,16 @@ public class MemoryFragment extends Fragment {
 
     private void loadMemory() {
         if (api == null) return;
-        api.getMemory(new HermesApi.ApiCallback<JSONArray>() {
+        api.getMemory(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 memories.clear();
-                for (int i = 0; i < result.length(); i++) {
+                JSONArray arr = result.optJSONArray("memories");
+                if (arr == null) arr = new JSONArray();
+                for (int i = 0; i < arr.length(); i++) {
                     try {
-                        JSONObject obj = result.getJSONObject(i);
+                        JSONObject obj = arr.getJSONObject(i);
                         String content = obj.optString("content", obj.optString("text", ""));
                         String target = obj.optString("target", obj.optString("scope", "memory"));
                         String key = obj.optString("key", obj.optString("name", ""));

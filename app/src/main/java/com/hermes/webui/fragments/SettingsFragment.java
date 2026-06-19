@@ -57,7 +57,7 @@ public class SettingsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getSettings(new HermesApi.ApiCallback<JSONObject>() {
+        api.getSettings(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
@@ -82,9 +82,9 @@ public class SettingsFragment extends Fragment {
             }
 
             @Override
-            public void onError(String e) {
+            public void onError(String error) {
                 if (!isAdded()) return;
-                Log.e("Hermes", e);
+                Log.e("Hermes", error);
             }
         });
     }

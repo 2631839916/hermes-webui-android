@@ -184,14 +184,16 @@ public class TodosFragment extends Fragment {
 
     private void loadTodos() {
         if (api == null) return;
-        api.getTodos(new HermesApi.ApiCallback<JSONArray>() {
+        api.getTodos(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 todos.clear();
-                for (int i = 0; i < result.length(); i++) {
+                JSONArray arr = result.optJSONArray("todos");
+                if (arr == null) arr = new JSONArray();
+                for (int i = 0; i < arr.length(); i++) {
                     try {
-                        JSONObject obj = result.getJSONObject(i);
+                        JSONObject obj = arr.getJSONObject(i);
                         String id = obj.optString("todo_id", obj.optString("id", ""));
                         String content = obj.optString("content", obj.optString("text", obj.optString("title", "")));
                         String status = obj.optString("status", "pending");

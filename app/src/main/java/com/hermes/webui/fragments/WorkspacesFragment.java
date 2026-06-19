@@ -57,9 +57,9 @@ public class WorkspacesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getWorkspaces(new HermesApi.ApiCallback<JSONArray>() {
+        api.getWorkspaces(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
                 workspaces.clear();
                 try {
@@ -83,9 +83,9 @@ public class WorkspacesFragment extends Fragment {
             }
 
             @Override
-            public void onError(String e) {
+            public void onError(String error) {
                 if (!isAdded()) return;
-                Log.e("Hermes", e);
+                Log.e("Hermes", error);
             }
         });
     }

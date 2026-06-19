@@ -169,14 +169,16 @@ public class SkillsFragment extends Fragment {
 
     private void loadSkills() {
         if (api == null) return;
-        api.getSkills(new HermesApi.ApiCallback<JSONArray>() {
+        api.getSkills(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 allSkills.clear();
-                for (int i = 0; i < result.length(); i++) {
+                JSONArray arr = result.optJSONArray("skills");
+                if (arr == null) arr = new JSONArray();
+                for (int i = 0; i < arr.length(); i++) {
                     try {
-                        JSONObject obj = result.getJSONObject(i);
+                        JSONObject obj = arr.getJSONObject(i);
                         allSkills.add(new SkillItem(
                                 obj.optString("name", ""),
                                 obj.optString("category", obj.optString("type", "")),
@@ -221,9 +223,9 @@ public class SkillsFragment extends Fragment {
         if (!isAdded()) return;
         if (api == null) return;
 
-        api.getSkillDetail(skill.name, new HermesApi.ApiCallback<JSONObject>() {
+        api.getSkillDetail(skill.name, new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray result) {
+            public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
                 builder.setTitle(skill.name);

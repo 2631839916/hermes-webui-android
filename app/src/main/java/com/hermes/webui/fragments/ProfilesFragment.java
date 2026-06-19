@@ -58,9 +58,9 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getProfiles(new HermesApi.ApiCallback<JSONArray>() {
+        api.getProfiles(new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
                 profiles.clear();
                 try {
@@ -83,9 +83,9 @@ public class ProfilesFragment extends Fragment {
             }
 
             @Override
-            public void onError(String e) {
+            public void onError(String error) {
                 if (!isAdded()) return;
-                Log.e("Hermes", e);
+                Log.e("Hermes", error);
             }
         });
     }
@@ -97,9 +97,9 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        Toast.makeText(requireContext(), "Profile switch: " + profileName, Toast.LENGTH_SHORT).show(); api.getProfiles( new HermesApi.ApiCallback<JSONObject>() {
+        Toast.makeText(requireContext(), "Profile switch: " + profileName, Toast.LENGTH_SHORT).show(); api.getProfiles( new HermesApi.ApiCallback() {
             @Override
-            public void onSuccess(JSONArray response) {
+            public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
@@ -111,7 +111,7 @@ public class ProfilesFragment extends Fragment {
             }
 
             @Override
-            public void onError(String e) {
+            public void onError(String error) {
                 if (!isAdded()) return;
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() ->

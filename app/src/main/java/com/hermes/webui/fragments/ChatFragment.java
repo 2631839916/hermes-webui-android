@@ -219,13 +219,15 @@ public class ChatFragment extends Fragment {
 
     private void loadSessions() {
         if (api == null) return;
-        api.getSessions(new HermesApi.ApiCallback<JSONArray>() {
+        api.getSessions(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 sessions.clear();
-                for (int i = 0; i < result.length() && i < 50; i++) {
+                JSONArray arr = result.optJSONArray("sessions");
+                if (arr == null) arr = new JSONArray();
+                for (int i = 0; i < arr.length() && i < 50; i++) {
                     try {
-                        JSONObject s = result.getJSONObject(i);
+                        JSONObject s = arr.getJSONObject(i);
                         String id = s.optString("session_id", s.optString("id", ""));
                         String title = s.optString("title", "Untitled");
                         String preview = s.optString("preview", s.optString("last_message", ""));
@@ -255,7 +257,7 @@ public class ChatFragment extends Fragment {
         messageContainer.removeAllViews();
 
         if (api == null) return;
-        api.getSession(session.id, new HermesApi.ApiCallback<JSONObject>() {
+        api.getSession(session.id, new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 JSONArray msgs = result.optJSONArray("messages");
@@ -297,7 +299,7 @@ public class ChatFragment extends Fragment {
         typingIndicator.setVisibility(View.VISIBLE);
         isStreaming = true;
 
-        api.sendChatMessage(currentSessionId, text, new HermesApi.ApiCallback<JSONObject>() {
+        api.sendChatMessage(currentSessionId, text, new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
@@ -521,7 +523,7 @@ public class ChatFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (api != null && currentStreamId != null) {
-            api.cancelChat(currentStreamId, new HermesApi.ApiCallback<JSONObject>() {
+            api.cancelChat(currentStreamId, new HermesApi.ApiCallback() {
                 @Override public void onSuccess(JSONObject result) {}
                 @Override public void onError(String error) {}
             });
