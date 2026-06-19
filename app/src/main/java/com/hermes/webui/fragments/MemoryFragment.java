@@ -151,20 +151,31 @@ public class MemoryFragment extends Fragment {
             public void onSuccess(JSONObject result) {
                 if (!isAdded()) return;
                 memories.clear();
-                JSONArray arr = result.optJSONArray("memories");
-                if (arr == null) arr = new JSONArray();
-                for (int i = 0; i < arr.length(); i++) {
-                    try {
-                        JSONObject obj = arr.getJSONObject(i);
-                        String content = obj.optString("content", obj.optString("text", ""));
-                        String target = obj.optString("target", obj.optString("scope", "memory"));
-                        String key = obj.optString("key", obj.optString("name", ""));
-                        String category = obj.optString("category", obj.optString("type", ""));
-                        String timestamp = obj.optString("timestamp", obj.optString("created_at", ""));
-                        if (!content.isEmpty()) {
-                            memories.add(new MemoryItem(content, target, key, category, timestamp));
+                // API返回 {memory: "...", user: "...", soul: "..."}
+                String memoryContent = result.optString("memory", "");
+                String userContent = result.optString("user", "");
+                String soulContent = result.optString("soul", "");
+                if (!memoryContent.isEmpty()) {
+                    // 按 § 分割
+                    String[] parts = memoryContent.split("§");
+                    for (String part : parts) {
+                        String trimmed = part.trim();
+                        if (!trimmed.isEmpty()) {
+                            memories.add(new MemoryItem(trimmed, "memory", "", "记忆", ""));
                         }
-                    } catch (Exception ignored) {}
+                    }
+                }
+                if (!userContent.isEmpty()) {
+                    String[] parts = userContent.split("§");
+                    for (String part : parts) {
+                        String trimmed = part.trim();
+                        if (!trimmed.isEmpty()) {
+                            memories.add(new MemoryItem(trimmed, "user", "", "用户", ""));
+                        }
+                    }
+                }
+                if (!soulContent.isEmpty()) {
+                    memories.add(new MemoryItem(soulContent, "soul", "", "灵魂", ""));
                 }
                 adapter.notifyDataSetChanged();
                 updateCount();
