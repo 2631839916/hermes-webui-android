@@ -211,7 +211,7 @@ public class TasksFragment extends Fragment {
         CronItem item = cronJobs.get(position);
         api.deleteCron(item.jobId, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(JSONArray result) {
                 if (!isAdded()) return;
                 if (position < cronJobs.size()) {
                     cronJobs.remove(position);
@@ -283,7 +283,7 @@ public class TasksFragment extends Fragment {
 
                 api.createCron(data, new HermesApi.ApiCallback<JSONObject>() {
                     @Override
-                    public void onSuccess(JSONObject result) {
+                    public void onSuccess(JSONArray result) {
                         if (!isAdded()) return;
                         Toast.makeText(requireContext(), "Task created", Toast.LENGTH_SHORT).show();
                         loadCrons();
@@ -296,7 +296,7 @@ public class TasksFragment extends Fragment {
                     }
                 });
             } catch (Exception e) {
-                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
             }
         });
 

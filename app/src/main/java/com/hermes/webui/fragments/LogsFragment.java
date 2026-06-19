@@ -2,6 +2,7 @@ package com.hermes.webui.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +58,7 @@ public class LogsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getLogs(new HermesApi.ApiCallback() {
+        api.getLogs(new HermesApi.ApiCallback<JSONObject>() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
@@ -75,7 +76,7 @@ public class LogsFragment extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("Hermes", e);
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
@@ -83,9 +84,9 @@ public class LogsFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 if (!isAdded()) return;
-                e.printStackTrace();
+                Log.e("Hermes", e);
             }
         });
     }

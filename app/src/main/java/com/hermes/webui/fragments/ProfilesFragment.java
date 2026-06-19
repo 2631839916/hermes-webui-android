@@ -1,6 +1,7 @@
 package com.hermes.webui.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,9 +58,9 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getProfiles(new HermesApi.ApiCallback() {
+        api.getProfiles(new HermesApi.ApiCallback<JSONArray>() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(JSONArray response) {
                 if (!isAdded()) return;
                 profiles.clear();
                 try {
@@ -74,7 +75,7 @@ public class ProfilesFragment extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("Hermes", e);
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
@@ -82,9 +83,9 @@ public class ProfilesFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 if (!isAdded()) return;
-                e.printStackTrace();
+                Log.e("Hermes", e);
             }
         });
     }
@@ -96,9 +97,9 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        Toast.makeText(requireContext(), "切换配置: " + profileName, Toast.LENGTH_SHORT).show(); if(false) api.getProfiles( new HermesApi.ApiCallback() {
+        Toast.makeText(requireContext(), "Profile switch: " + profileName, Toast.LENGTH_SHORT).show(); api.getProfiles( new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(JSONArray response) {
                 if (!isAdded()) return;
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
@@ -110,7 +111,7 @@ public class ProfilesFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 if (!isAdded()) return;
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() ->

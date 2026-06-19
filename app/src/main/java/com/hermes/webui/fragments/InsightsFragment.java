@@ -1,6 +1,7 @@
 package com.hermes.webui.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,7 @@ public class InsightsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getInsights(selectedPeriod, new HermesApi.ApiCallback() {
+        api.getInsights(selectedPeriod, new HermesApi.ApiCallback<JSONObject>() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
@@ -110,7 +111,7 @@ public class InsightsFragment extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("Hermes", e);
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
@@ -118,9 +119,9 @@ public class InsightsFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 if (!isAdded()) return;
-                e.printStackTrace();
+                Log.e("Hermes", e);
             }
         });
     }

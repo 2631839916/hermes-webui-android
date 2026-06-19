@@ -223,7 +223,7 @@ public class SkillsFragment extends Fragment {
 
         api.getSkillDetail(skill.name, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(JSONArray result) {
                 if (!isAdded()) return;
                 android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
                 builder.setTitle(skill.name);

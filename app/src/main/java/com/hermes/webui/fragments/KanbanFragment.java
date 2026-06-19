@@ -345,7 +345,7 @@ public class KanbanFragment extends Fragment {
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Error: " + e, Toast.LENGTH_SHORT).show();
         }
     }
 

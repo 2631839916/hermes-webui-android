@@ -1,6 +1,7 @@
 package com.hermes.webui.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,9 +57,9 @@ public class WorkspacesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getWorkspaces(new HermesApi.ApiCallback() {
+        api.getWorkspaces(new HermesApi.ApiCallback<JSONArray>() {
             @Override
-            public void onSuccess(JSONObject response) {
+            public void onSuccess(JSONArray response) {
                 if (!isAdded()) return;
                 workspaces.clear();
                 try {
@@ -74,7 +75,7 @@ public class WorkspacesFragment extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("Hermes", e);
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
@@ -82,9 +83,9 @@ public class WorkspacesFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 if (!isAdded()) return;
-                e.printStackTrace();
+                Log.e("Hermes", e);
             }
         });
     }

@@ -2,6 +2,7 @@ package com.hermes.webui.fragments;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -256,7 +257,7 @@ public class ChatFragment extends Fragment {
         if (api == null) return;
         api.getSession(session.id, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(JSONArray result) {
                 JSONArray msgs = result.optJSONArray("messages");
                 if (msgs != null) {
                     for (int i = 0; i < msgs.length(); i++) {
@@ -298,7 +299,7 @@ public class ChatFragment extends Fragment {
 
         api.sendChatMessage(currentSessionId, text, new HermesApi.ApiCallback<JSONObject>() {
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onSuccess(JSONArray result) {
                 if (!isAdded()) return;
                 if (currentSessionId == null) {
                     currentSessionId = result.optString("session_id", null);
@@ -416,10 +417,6 @@ public class ChatFragment extends Fragment {
         }
         bubble.setLayoutParams(bubbleParams);
 
-        // Max width ~75% of screen
-        int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.75);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) { /* maxWidth handled via layout params */ }
-bubble.setMaxWidth(dp(280));
 
         // Sender label
         TextView senderView = new TextView(requireContext());
@@ -525,7 +522,7 @@ bubble.setMaxWidth(dp(280));
         super.onDestroyView();
         if (api != null && currentStreamId != null) {
             api.cancelChat(currentStreamId, new HermesApi.ApiCallback<JSONObject>() {
-                @Override public void onSuccess(JSONObject result) {}
+                @Override public void onSuccess(JSONArray result) {}
                 @Override public void onError(String error) {}
             });
         }
