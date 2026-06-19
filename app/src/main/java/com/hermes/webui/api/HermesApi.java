@@ -386,8 +386,11 @@ public class HermesApi {
         return sb.toString();
     }
 
+    }
+
     private String esc(String s) {
-        return s.replace("\\\\", "\\\\").replace("\\"", "\\\\\"").replace("\n", "\\\\n").replace("\r", "\\\\r").replace("\t", "\\\\t");
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
     }
 
     public void shutdown() { executor.shutdown(); }
