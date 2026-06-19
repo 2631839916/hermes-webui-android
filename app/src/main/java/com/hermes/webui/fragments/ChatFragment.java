@@ -94,7 +94,7 @@ public class ChatFragment extends Fragment {
         if (args != null && args.containsKey("session_id")) {
             String sid = args.getString("session_id");
             if (sid != null && !sid.isEmpty()) {
-                loadSessionMessages(sid);
+                loadSessionMessages(new SessionItem(sid, "会话", ""));
             }
         }
     }
