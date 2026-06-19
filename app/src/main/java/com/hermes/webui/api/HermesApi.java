@@ -111,33 +111,65 @@ public class HermesApi {
 
     public void streamChat(String streamId, SseCallback cb) {
         executor.execute(() -> {
+            boolean completed = false;
             try {
                 URL url = new URL(baseUrl + "/api/chat/stream?stream_id=" + streamId);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
-                conn.setConnectTimeout(5000);
-                conn.setReadTimeout(120000);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(180000);
                 conn.setRequestProperty("Accept", "text/event-stream");
+                conn.setRequestProperty("Cache-Control", "no-cache");
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "SSE connect: code=" + responseCode + " stream=" + streamId);
+                if (responseCode >= 400) {
+                    BufferedReader errReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                    StringBuilder errSb = new StringBuilder();
+                    String errLine;
+                    while ((errLine = errReader.readLine()) != null) errSb.append(errLine);
+                    errReader.close();
+                    mainHandler.post(() -> cb.onError("HTTP " + responseCode + ": " + errSb.toString()));
+                    conn.disconnect();
+                    return;
+                }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String line;
                 String currentEvent = "";
+                int tokenCount = 0;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("event: ")) {
                         currentEvent = line.substring(7).trim();
                     } else if (line.startsWith("data: ")) {
                         String data = line.substring(6).trim();
-                        if ("[DONE]".equals(data)) { mainHandler.post(cb::onComplete); break; }
-                        // 只处理 token 事件（实际回复内容）
+                        // 完成信号：[DONE]、stream_end、done
+                        if ("[DONE]".equals(data) || "stream_end".equals(currentEvent) || "done".equals(currentEvent)) {
+                            Log.d(TAG, "SSE completed via: " + currentEvent);
+                            completed = true;
+                            mainHandler.post(cb::onComplete);
+                            break;
+                        }
+                        // 处理 token 事件（实际回复内容）
                         if ("token".equals(currentEvent)) {
+                            tokenCount++;
                             mainHandler.post(() -> cb.onData(data));
                         }
                     } else if (line.isEmpty()) {
                         currentEvent = "";
                     }
                 }
+                Log.d(TAG, "SSE stream ended, tokens=" + tokenCount + " completed=" + completed);
                 reader.close();
                 conn.disconnect();
-            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
+            } catch (Exception e) {
+                Log.e(TAG, "SSE error: " + e.getMessage());
+                mainHandler.post(() -> cb.onError(e.getMessage()));
+            } finally {
+                // 确保 onComplete 一定会被调用
+                if (!completed) {
+                    Log.w(TAG, "SSE stream ended without completion signal, calling onComplete anyway");
+                    mainHandler.post(cb::onComplete);
+                }
+            }
         });
     }
 
