@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton[] navButtons;
     private int selectedNav = 0;
     private String currentSessionId;
+    private Fragment[] fragmentCache = new Fragment[11];
     private final List<SessionItem> sessions = new ArrayList<>();
     private SessionAdapter sessionAdapter;
 
@@ -66,10 +67,11 @@ public class MainActivity extends AppCompatActivity {
         View btnClose = findViewById(R.id.btnCloseSidebar);
 
         if (btnHamburger != null) btnHamburger.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.LEFT));
-        if (btnNewChat != null) btnNewChat.setOnClickListener(v -> { showFragment(new ChatFragment()); highlightNav(0); });
+        if (btnNewChat != null) btnNewChat.setOnClickListener(v -> { fragmentCache[0] = new ChatFragment(); showFragment(fragmentCache[0]); highlightNav(0); });
         if (btnReload != null) btnReload.setOnClickListener(v -> loadSessions());
         if (fabNewSession != null) fabNewSession.setOnClickListener(v -> {
-            showFragment(new ChatFragment());
+            fragmentCache[0] = new ChatFragment();
+            showFragment(fragmentCache[0]);
             drawerLayout.closeDrawer(Gravity.LEFT);
             highlightNav(0);
         });
@@ -82,18 +84,24 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.navLogs), findViewById(R.id.navSettings)
         };
 
-        Fragment[] fragments = {
-            new ChatFragment(), new TasksFragment(), new KanbanFragment(),
-            new SkillsFragment(), new MemoryFragment(), new WorkspacesFragment(),
-            new ProfilesFragment(), new TodosFragment(), new InsightsFragment(),
-            new LogsFragment(), new SettingsFragment()
-        };
+        // 初始化 fragment 缓存
+        fragmentCache[0] = new ChatFragment();
+        fragmentCache[1] = new TasksFragment();
+        fragmentCache[2] = new KanbanFragment();
+        fragmentCache[3] = new SkillsFragment();
+        fragmentCache[4] = new MemoryFragment();
+        fragmentCache[5] = new WorkspacesFragment();
+        fragmentCache[6] = new ProfilesFragment();
+        fragmentCache[7] = new TodosFragment();
+        fragmentCache[8] = new InsightsFragment();
+        fragmentCache[9] = new LogsFragment();
+        fragmentCache[10] = new SettingsFragment();
 
         for (int i = 0; i < navButtons.length; i++) {
             final int idx = i;
             if (navButtons[i] != null) {
                 navButtons[i].setOnClickListener(v -> {
-                    showFragment(fragments[idx]);
+                    showFragment(fragmentCache[idx]);
                     highlightNav(idx);
                     drawerLayout.closeDrawer(Gravity.LEFT);
                 });
@@ -103,11 +111,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showFragment(Fragment f) {
-        if (f instanceof ChatFragment && currentSessionId != null) {
-            Bundle args = new Bundle();
-            args.putString("session_id", currentSessionId);
-            f.setArguments(args);
-        }
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.contentFrame, f)
             .commit();
@@ -149,12 +152,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void loadSession(String sessionId) {
         drawerLayout.closeDrawer(Gravity.LEFT);
-        // Switch to chat fragment and load this session
-        ChatFragment chat = new ChatFragment();
+        currentSessionId = sessionId;
+        fragmentCache[0] = new ChatFragment();
         Bundle args = new Bundle();
         args.putString("session_id", sessionId);
-        chat.setArguments(args);
-        showFragment(chat);
+        fragmentCache[0].setArguments(args);
+        showFragment(fragmentCache[0]);
         highlightNav(0);
     }
 
