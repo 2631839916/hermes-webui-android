@@ -74,28 +74,9 @@ public class ChatFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Root layout: horizontal with sidebar + chat area
-        LinearLayout root = new LinearLayout(requireContext());
-        root.setOrientation(LinearLayout.HORIZONTAL);
-        root.setBackgroundColor(COLOR_BG);
-        root.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        // Sidebar for sessions
-        LinearLayout sidebar = createSidebar();
-        root.addView(sidebar);
-
-        // Divider
-        View divider = new View(requireContext());
-        divider.setBackgroundColor(COLOR_BORDER);
-        divider.setLayoutParams(new LinearLayout.LayoutParams(dp(1), ViewGroup.LayoutParams.MATCH_PARENT));
-        root.addView(divider);
-
-        // Chat area
+        // Only chat area - sessions are in the activity's drawer
         LinearLayout chatArea = createChatArea();
-        root.addView(chatArea);
-
-        return root;
+        return chatArea;
     }
 
     @Override
@@ -105,10 +86,17 @@ public class ChatFragment extends Fragment {
             api = ((MainActivity) getActivity()).getApi();
         }
         if (api == null) {
-            Toast.makeText(requireContext(), "API not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "API不可用", Toast.LENGTH_SHORT).show();
             return;
         }
-        loadSessions();
+        // Check if a session_id was passed
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("session_id")) {
+            String sid = args.getString("session_id");
+            if (sid != null && !sid.isEmpty()) {
+                loadSessionMessages(sid);
+            }
+        }
     }
 
     private LinearLayout createSidebar() {
@@ -146,7 +134,7 @@ public class ChatFragment extends Fragment {
         // Session list
         sessionList = new RecyclerView(requireContext());
         sessionList.setLayoutManager(new LinearLayoutManager(requireContext()));
-        sessionList.setAdapter(new SessionAdapter());
+        // session list is in activity drawer
         sidebar.addView(sessionList, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
@@ -218,7 +206,7 @@ public class ChatFragment extends Fragment {
         return chatArea;
     }
 
-    private void loadSessions() {
+    private void loadSessions_DISABLED() {  // moved to MainActivity
         if (api == null) return;
         api.getSessions(new HermesApi.ApiCallback() {
             @Override
