@@ -342,9 +342,17 @@ public class ChatFragment extends Fragment {
     }
 
     private void sendMessage() {
-        if (api == null) return;
+        Log.d(TAG, "sendMessage called, api=" + (api != null));
+        if (api == null) {
+            Toast.makeText(requireContext(), "API未初始化", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String text = inputMessage.getText().toString().trim();
-        if (text.isEmpty()) return;
+        Log.d(TAG, "sendMessage text=" + text);
+        if (text.isEmpty()) {
+            Toast.makeText(requireContext(), "请输入消息", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         addMessageBubble("You", text, true);
         inputMessage.setText("");
@@ -384,7 +392,8 @@ public class ChatFragment extends Fragment {
                 if (!isAdded()) return;
                 typingIndicator.setVisibility(View.GONE);
                 isStreaming = false;
-                Toast.makeText(requireContext(), "Send failed: " + error, Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Send failed: " + error);
+                Toast.makeText(requireContext(), "发送失败: " + error, Toast.LENGTH_SHORT).show();
             }
         });
     }
