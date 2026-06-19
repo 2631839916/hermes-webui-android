@@ -150,10 +150,15 @@ public class ChatFragment extends Fragment {
         if (getActivity() instanceof MainActivity) {
             MainActivity activity = (MainActivity) getActivity();
             api = activity.getApi();
+            // 优先检查 Bundle 传入的 session_id（从会话列表点击进入）
+            Bundle args = getArguments();
+            String bundleId = (args != null) ? args.getString("session_id") : null;
+            // 其次检查 activity 保存的 session_id
             String savedId = activity.getCurrentSessionId();
-            if (savedId != null) {
-                currentSessionId = savedId;
-                loadMessages(savedId);
+            String sessionId = (bundleId != null) ? bundleId : savedId;
+            if (sessionId != null) {
+                currentSessionId = sessionId;
+                loadMessages(sessionId);
             }
         }
         if (api == null) {
