@@ -1,537 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawerLayout"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    android:orientation="vertical"
+    android:background="#1a1a2e">
 
-    <!-- 主内容区域 -->
+    <!-- 顶部工具栏 -->
     <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#FEFCF7">
+        android:layout_height="48dp"
+        android:background="#16213e"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
-        <!-- 顶部标题栏 -->
-        <LinearLayout
-            android:id="@+id/titleBar"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="#FAF7F0"
-            android:elevation="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <!-- 汉堡菜单按钮 -->
-            <ImageButton
-                android:id="@+id/btnHamburger"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Menu"
-                android:src="@drawable/ic_menu"
-                android:scaleType="centerInside" />
-
-            <!-- Hermes 图标 -->
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="12dp"
-                android:src="@drawable/ic_hermes"
-                android:contentDescription="Hermes" />
-
-            <!-- 标题 -->
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:text="Hermes"
-                android:textColor="#1A1610"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <!-- 新建聊天按钮 -->
-            <ImageButton
-                android:id="@+id/btnNewChat"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="New conversation"
-                android:src="@drawable/ic_new_chat"
-                android:scaleType="centerInside" />
-
-            <!-- 刷新按钮 -->
-            <ImageButton
-                android:id="@+id/btnReload"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Reload"
-                android:src="@drawable/ic_refresh"
-                android:scaleType="centerInside" />
-        </LinearLayout>
-
-        <!-- 主体内容区域 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <!-- 左侧导航栏 (Rail) -->
-            <ScrollView
-                android:id="@+id/rail"
-                android:layout_width="64dp"
-                android:layout_height="match_parent"
-                android:background="#FAF7F0"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center_horizontal"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp">
-
-                    <!-- Chat 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navChat"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Chat"
-                        android:src="@drawable/ic_chat"
-                        android:scaleType="centerInside"
-                        android:tag="chat" />
-
-                    <!-- Tasks 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navTasks"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Tasks"
-                        android:src="@drawable/ic_tasks"
-                        android:scaleType="centerInside"
-                        android:tag="tasks" />
-
-                    <!-- Kanban 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navKanban"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Kanban"
-                        android:src="@drawable/ic_kanban"
-                        android:scaleType="centerInside"
-                        android:tag="kanban" />
-
-                    <!-- Skills 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navSkills"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Skills"
-                        android:src="@drawable/ic_skills"
-                        android:scaleType="centerInside"
-                        android:tag="skills" />
-
-                    <!-- Memory 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navMemory"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Memory"
-                        android:src="@drawable/ic_memory"
-                        android:scaleType="centerInside"
-                        android:tag="memory" />
-
-                    <!-- Spaces 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navSpaces"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Spaces"
-                        android:src="@drawable/ic_spaces"
-                        android:scaleType="centerInside"
-                        android:tag="workspaces" />
-
-                    <!-- Profiles 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navProfiles"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Profiles"
-                        android:src="@drawable/ic_profiles"
-                        android:scaleType="centerInside"
-                        android:tag="profiles" />
-
-                    <!-- Todos 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navTodos"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Todos"
-                        android:src="@drawable/ic_todos"
-                        android:scaleType="centerInside"
-                        android:tag="todos" />
-
-                    <!-- Insights 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navInsights"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Insights"
-                        android:src="@drawable/ic_insights"
-                        android:scaleType="centerInside"
-                        android:tag="insights" />
-
-                    <!-- Logs 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navLogs"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Logs"
-                        android:src="@drawable/ic_logs"
-                        android:scaleType="centerInside"
-                        android:tag="logs" />
-
-                    <!-- 弹性空间 -->
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_weight="1" />
-
-                    <!-- Settings 按钮 -->
-                    <ImageButton
-                        android:id="@+id/navSettings"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="4dp"
-                        android:background="@drawable/rail_button_selector"
-                        android:contentDescription="Settings"
-                        android:src="@drawable/ic_settings"
-                        android:scaleType="centerInside"
-                        android:tag="settings" />
-                </LinearLayout>
-            </ScrollView>
-
-            <!-- 分隔线 -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="#E0D8C8" />
-
-            <!-- 主内容区域 -->
-            <FrameLayout
-                android:id="@+id/contentFrame"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <!-- Chat 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelChat"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="visible">
-
-                    <!-- 消息列表 -->
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/messageList"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:background="#FEFCF7"
-                        android:clipToPadding="false"
-                        android:padding="16dp" />
-
-                    <!-- 输入区域 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="#FAF7F0"
-                        android:elevation="8dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="12dp">
-
-                        <!-- 附件按钮 -->
-                        <ImageButton
-                            android:id="@+id/btnAttach"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="Attach"
-                            android:src="@drawable/ic_attach"
-                            android:scaleType="centerInside" />
-
-                        <!-- 输入框 -->
-                        <EditText
-                            android:id="@+id/inputMessage"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/input_background"
-                            android:hint="输入消息..."
-                            android:inputType="textMultiLine"
-                            android:maxLines="5"
-                            android:minHeight="48dp"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="16dp"
-                            android:paddingTop="12dp"
-                            android:paddingBottom="12dp"
-                            android:textColor="#1A1610"
-                            android:textColorHint="#5C5344"
-                            android:textSize="14sp" />
-
-                        <!-- 发送按钮 -->
-                        <ImageButton
-                            android:id="@+id/btnSend"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="@drawable/send_button_background"
-                            android:contentDescription="Send"
-                            android:src="@drawable/ic_send"
-                            android:scaleType="centerInside"
-                            app:tint="#FFFFFF" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Tasks 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelTasks"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:background="#FEFCF7">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:text="Tasks"
-                        android:textColor="#1A1610"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:text="任务管理面板"
-                        android:textColor="#5C5344"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <!-- Kanban 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelKanban"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:background="#FEFCF7">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:text="Kanban"
-                        android:textColor="#1A1610"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:text="看板视图"
-                        android:textColor="#5C5344"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <!-- Skills 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelSkills"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:background="#FEFCF7">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:text="Skills"
-                        android:textColor="#1A1610"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:text="技能管理"
-                        android:textColor="#5C5344"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <!-- Memory 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelMemory"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:background="#FEFCF7">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:text="Memory"
-                        android:textColor="#1A1610"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:text="记忆管理"
-                        android:textColor="#5C5344"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <!-- Settings 面板 -->
-                <LinearLayout
-                    android:id="@+id/panelSettings"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    android:background="#FEFCF7">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:text="Settings"
-                        android:textColor="#1A1610"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="24dp"
-                        android:paddingEnd="24dp"
-                        android:text="设置"
-                        android:textColor="#5C5344"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-            </FrameLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- 侧边栏 (Drawer) -->
-    <LinearLayout
-        android:id="@+id/sidebar"
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="#FAF7F0"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
-
-        <!-- 侧边栏头部 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="#FAF7F0"
-            android:elevation="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="会话列表"
-                android:textColor="#1A1610"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <ImageButton
-                android:id="@+id/btnCloseSidebar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Close"
-                android:src="@drawable/ic_close"
-                android:scaleType="centerInside" />
-        </LinearLayout>
-
-        <!-- 会话列表 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/sessionList"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:padding="8dp" />
-
-        <!-- 新建会话按钮 -->
         <ImageButton
-            android:id="@+id/fabNewSession"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="16dp"
-            android:contentDescription="New session"
-            android:src="@drawable/ic_add"
-            android:background="@drawable/send_button_background"
+            android:id="@+id/btnBack"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_refresh"
             android:scaleType="centerInside"
-            android:tint="#FFFFFF" />
+            android:contentDescription="返回" />
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:text="Hermes WebUI"
+            android:textColor="#ffffff"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_refresh"
+            android:scaleType="centerInside"
+            android:contentDescription="刷新" />
     </LinearLayout>
 
-</androidx.drawerlayout.widget.DrawerLayout>
+    <!-- 连接状态 -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0f3460"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="正在连接..."
+        android:textColor="#e94560"
+        android:textSize="13sp"
+        android:visibility="visible" />
+
+    <!-- WebView -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 底部地址栏 -->
+    <LinearLayout
+        android:id="@+id/addressBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#16213e"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <EditText
+            android:id="@+id/urlInput"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/input_background"
+            android:hint="http://localhost:8787"
+            android:inputType="textUri"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:singleLine="true"
+            android:textColor="#ffffff"
+            android:textColorHint="#888888"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/btnGo"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/send_button_background"
+            android:src="@drawable/ic_send"
+            android:scaleType="centerInside"
+            android:contentDescription="连接" />
+    </LinearLayout>
+
+</LinearLayout>
