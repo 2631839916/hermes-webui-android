@@ -148,7 +148,13 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (getActivity() instanceof MainActivity) {
-            api = ((MainActivity) getActivity()).getApi();
+            MainActivity activity = (MainActivity) getActivity();
+            api = activity.getApi();
+            String savedId = activity.getCurrentSessionId();
+            if (savedId != null) {
+                currentSessionId = savedId;
+                loadMessages(savedId);
+            }
         }
         if (api == null) {
             Toast.makeText(requireContext(), "API未初始化", Toast.LENGTH_SHORT).show();
@@ -203,7 +209,10 @@ public class ChatFragment extends Fragment {
                         currentSessionId = session.optString("session_id", null);
                     }
                     if (currentSessionId != null) {
-                        actuallySend(text);
+                        if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
+                    }
+                    actuallySend(text);
                     } else {
                         typingIndicator.setVisibility(View.GONE);
                         Toast.makeText(requireContext(), "创建会话失败", Toast.LENGTH_SHORT).show();
@@ -217,7 +226,10 @@ public class ChatFragment extends Fragment {
                 }
             });
         } else {
-            actuallySend(text);
+            if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).setCurrentSessionId(currentSessionId);
+                    }
+                    actuallySend(text);
         }
     }
 
@@ -297,6 +309,32 @@ public class ChatFragment extends Fragment {
                     isStreaming = false;
                 });
             }
+        });
+    }
+
+    private void loadMessages(String sessionId) {
+        if (api == null) return;
+        api.getSession(sessionId, new HermesApi.ApiCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                if (!isAdded()) return;
+                messageContainer.removeAllViews();
+                JSONArray msgs = result.optJSONArray("messages");
+                if (msgs != null) {
+                    for (int i = 0; i < msgs.length(); i++) {
+                        try {
+                            JSONObject m = msgs.getJSONObject(i);
+                            String role = m.optString("role", "user");
+                            String c = m.optString("content", "");
+                            if (!c.isEmpty()) {
+                                addBubble("user".equals(role) ? "你" : "Hermes", c, "user".equals(role));
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                }
+            }
+            @Override
+            public void onError(String error) {}
         });
     }
 
