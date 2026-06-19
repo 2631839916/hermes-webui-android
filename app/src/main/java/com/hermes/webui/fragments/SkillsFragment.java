@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hermes.webui.MainActivity;
+import com.hermes.webui.R;
 import com.hermes.webui.api.HermesApi;
 
 import org.json.JSONArray;
