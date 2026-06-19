@@ -75,6 +75,15 @@ public class HermesApi {
         });
     }
 
+    public void createSession(ApiCallback cb) {
+        executor.execute(() -> {
+            try {
+                String r = httpPost(baseUrl + "/api/session/new", "{}");
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
+        });
+    }
+
     public void sendChatMessage(String sid, String msg, ApiCallback cb) {
         executor.execute(() -> {
             try {
