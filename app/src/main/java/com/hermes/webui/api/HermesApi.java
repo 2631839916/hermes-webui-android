@@ -164,7 +164,7 @@ public class HermesApi {
     public void getKanban(ApiCallback cb) {
         executor.execute(() -> {
             try {
-                String r = httpGet(baseUrl + "/api/kanban");
+                String r = httpGet(baseUrl + "/api/kanban/boards");
                 JSONObject j = new JSONObject(r);
                 mainHandler.post(() -> cb.onSuccess(j));
             } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
