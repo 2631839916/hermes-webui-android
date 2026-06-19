@@ -9,6 +9,7 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.text.style.TypefaceSpan;
 import android.text.style.URLSpan;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -417,7 +418,8 @@ public class ChatFragment extends Fragment {
 
         // Max width ~75% of screen
         int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.75);
-        bubble.setMaxWidth(maxWidth);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) { /* maxWidth handled via layout params */ }
+bubble.setMaxWidth(dp(280));
 
         // Sender label
         TextView senderView = new TextView(requireContext());

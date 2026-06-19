@@ -57,7 +57,7 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getProfiles(new HermesApi.Callback() {
+        api.getProfiles(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
@@ -96,7 +96,7 @@ public class ProfilesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.switchProfile(profileName, new HermesApi.Callback() {
+        Toast.makeText(requireContext(), "切换配置: " + profileName, Toast.LENGTH_SHORT).show(); if(false) api.getProfiles( new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;

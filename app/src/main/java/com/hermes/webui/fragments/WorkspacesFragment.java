@@ -56,7 +56,7 @@ public class WorkspacesFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getWorkspaces(new HermesApi.Callback() {
+        api.getWorkspaces(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;

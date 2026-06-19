@@ -148,7 +148,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/crons");
                 JSONObject json = new JSONObject(resp);
-                JSONArray crons = json.optJSONArray("crons", new JSONArray());
+                JSONArray crons = json.optJSONArray("crons") != null ? json.optJSONArray("crons") : new JSONArray();
                 mainHandler.post(() -> callback.onSuccess(crons));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
@@ -219,7 +219,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/skills");
                 JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("skills", new JSONArray())));
+                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("skills") != null ? json.optJSONArray("skills") : new JSONArray()));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
             }
@@ -243,7 +243,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/memory");
                 JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("memories", new JSONArray())));
+                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("memories") != null ? json.optJSONArray("memories") : new JSONArray()));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
             }
@@ -256,7 +256,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/todos");
                 JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("todos", new JSONArray())));
+                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("todos") != null ? json.optJSONArray("todos") : new JSONArray()));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
             }
@@ -269,7 +269,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/workspaces");
                 JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("workspaces", new JSONArray())));
+                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("workspaces") != null ? json.optJSONArray("workspaces") : new JSONArray()));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
             }
@@ -282,7 +282,7 @@ public class HermesApi {
             try {
                 String resp = httpGet(baseUrl + "/api/profiles");
                 JSONObject json = new JSONObject(resp);
-                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("profiles", new JSONArray())));
+                mainHandler.post(() -> callback.onSuccess(json.optJSONArray("profiles") != null ? json.optJSONArray("profiles") : new JSONArray()));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError(e.getMessage()));
             }

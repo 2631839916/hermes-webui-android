@@ -57,7 +57,7 @@ public class LogsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getLogs(new HermesApi.Callback() {
+        api.getLogs(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;

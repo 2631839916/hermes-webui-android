@@ -79,7 +79,7 @@ public class InsightsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getInsights(selectedPeriod, new HermesApi.Callback() {
+        api.getInsights(selectedPeriod, new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;

@@ -56,7 +56,7 @@ public class SettingsFragment extends Fragment {
         HermesApi api = activity.getApi();
         if (api == null) return;
 
-        api.getSettings(new HermesApi.Callback() {
+        api.getSettings(new HermesApi.ApiCallback() {
             @Override
             public void onSuccess(JSONObject response) {
                 if (!isAdded()) return;
