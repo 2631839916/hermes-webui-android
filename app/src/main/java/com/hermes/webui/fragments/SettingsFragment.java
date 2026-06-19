@@ -74,7 +74,7 @@ public class SettingsFragment extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    Log.e("Hermes", e);
+                    Log.e("Hermes", e.getMessage());
                 }
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
