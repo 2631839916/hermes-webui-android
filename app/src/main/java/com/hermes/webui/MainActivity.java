@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
             holder.senderText.setText(msg.sender);
             holder.contentText.setText(msg.content);
 
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) holder.container.getLayoutParams();
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.container.getLayoutParams();
             if (msg.isUser) {
                 holder.container.setBackgroundResource(R.drawable.message_user_background);
                 params.gravity = Gravity.END;
