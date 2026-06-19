@@ -31,22 +31,23 @@ public class HermesApi {
     public void setBaseUrl(String url) { this.baseUrl = url; }
     public String getBaseUrl() { return baseUrl; }
 
-    private JSONArray safeArray(JSONObject json, String key) {
-        JSONArray arr = json.optJSONArray(key);
-        return arr != null ? arr : new JSONArray();
+    private JSONArray safeArr(JSONObject j, String k) {
+        JSONArray a = j.optJSONArray(k);
+        return a != null ? a : new JSONArray();
     }
 
-    // Sessions
+    private JSONObject safeObj(String r) {
+        try { return new JSONObject(r); } catch (JSONException e) { return new JSONObject(); }
+    }
+
     public void getSessions(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/sessions");
                 JSONObject j = new JSONObject(r);
-                JSONArray s = safeArray(j, "sessions");
+                JSONArray s = safeArr(j, "sessions");
                 mainHandler.post(() -> cb.onSuccess(s));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -54,10 +55,9 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/session?session_id=" + sid);
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(j));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -65,24 +65,18 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/session/delete", "{\"session_id\":\"" + sid + "\"}");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Chat
     public void sendChatMessage(String sid, String msg, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                JSONObject body = new JSONObject();
-                try { if (sid != null) body.put("session_id", sid); body.put("message", msg); } catch (JSONException ignored) {}
-                String r = httpPost(baseUrl + "/api/chat/start", body.toString());
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                String body = "{\"message\":\"" + esc(msg) + "\"" + (sid != null ? ",\"session_id\":\"" + sid + "\"" : "") + "}";
+                String r = httpPost(baseUrl + "/api/chat/start", body);
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -90,14 +84,11 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/chat/cancel", "{\"stream_id\":\"" + streamId + "\"}");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // SSE
     public interface SseCallback {
         void onData(String data);
         void onComplete();
@@ -124,22 +115,17 @@ public class HermesApi {
                 }
                 reader.close();
                 conn.disconnect();
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Crons
     public void getCrons(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/crons");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "crons")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "crons")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -147,10 +133,8 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/crons/create", data.toString());
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -158,22 +142,18 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/crons/delete", "{\"job_id\":\"" + jobId + "\"}");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Kanban
     public void getKanban(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/kanban");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                JSONObject j = new JSONObject(r);
+                mainHandler.post(() -> cb.onSuccess(j));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -181,35 +161,28 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/kanban/task", "{\"title\":\"" + esc(title) + "\"}");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
     public void updateKanbanTask(String taskId, JSONObject data, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
-                try { data.put("task_id", taskId); } catch (JSONException ignored) {}
+                data.put("task_id", taskId);
                 String r = httpPost(baseUrl + "/api/kanban/task/update", data.toString());
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Skills
     public void getSkills(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/skills");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "skills")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "skills")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -217,98 +190,75 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/skills/detail?name=" + name);
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Memory
     public void getMemory(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/memory");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "memories")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "memories")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Todos
     public void getTodos(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/todos");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "todos")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "todos")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Workspaces
     public void getWorkspaces(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/workspaces");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "workspaces")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "workspaces")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Profiles
     public void getProfiles(ApiCallback<JSONArray> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/profiles");
                 JSONObject j = new JSONObject(r);
-                mainHandler.post(() -> cb.onSuccess(safeArray(j, "profiles")));
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeArr(j, "profiles")));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Insights
     public void getInsights(String period, ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/insights?period=" + (period != null ? period : "7d"));
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Logs
     public void getLogs(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/logs");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Settings
     public void getSettings(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/settings");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
@@ -316,38 +266,29 @@ public class HermesApi {
         executor.execute(() -> {
             try {
                 String r = httpPost(baseUrl + "/api/settings", s.toString());
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Models
     public void getModels(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/api/models");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // Health
     public void healthCheck(ApiCallback<JSONObject> cb) {
         executor.execute(() -> {
             try {
                 String r = httpGet(baseUrl + "/health");
-                mainHandler.post(() -> { try { cb.onSuccess(new JSONObject(r)); } catch (JSONException e) { cb.onError(e.getMessage()); } });
-            } catch (Exception e) {
-                mainHandler.post(() -> cb.onError(e.getMessage()));
-            }
+                mainHandler.post(() -> cb.onSuccess(safeObj(r)));
+            } catch (Exception e) { mainHandler.post(() -> cb.onError(e.getMessage())); }
         });
     }
 
-    // HTTP helpers
     private String httpGet(String urlStr) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
         conn.setRequestMethod("GET");
@@ -384,8 +325,6 @@ public class HermesApi {
         reader.close();
         if (code >= 400) throw new Exception("HTTP " + code + ": " + sb.toString());
         return sb.toString();
-    }
-
     }
 
     private String esc(String s) {
